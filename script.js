@@ -457,13 +457,11 @@ window.addEventListener('DOMContentLoaded', () => {
    INTEGRAÇÃO FIREBASE (LOGIN E CLOUD SAVE)
    ================================================================================ */
 
-// 1. COLETAR ESSES DADOS NO CONSOLE DO FIREBASE (Configurações do Projeto)
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+/* ================================================================================
+   INTEGRAÇÃO FIREBASE (LOGIN E CLOUD SAVE)
+   ================================================================================ */
 
-// Your web app's Firebase configuration
+// 1. SUA CONFIGURAÇÃO (Adaptada para funcionar com o seu HTML)
 const firebaseConfig = {
   apiKey: "AIzaSyB4tfFp463ZwSHTW22uiyV35GwdlCEgk8k",
   authDomain: "ficha-rpg-3112e.firebaseapp.com",
@@ -473,11 +471,15 @@ const firebaseConfig = {
   appId: "1:1009323913618:web:202ed84838549bf990514b"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// 2. INICIALIZAÇÃO (Usando a sintaxe global 'firebase.', não 'import')
+firebase.initializeApp(firebaseConfig);
+
+// 3. ATIVANDO SERVIÇOS
 const auth = firebase.auth();
 const db = firebase.firestore();
 let usuarioAtual = null;
+
+// ... O RESTO DO CÓDIGO DE LOGIN (auth.onAuthStateChanged, etc) CONTINUA IGUAL ABAIXO ...
 
 // --- SISTEMA DE LOGIN ---
 
