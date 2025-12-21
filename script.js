@@ -496,25 +496,61 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+// --- NO SEU SCRIPT.JS (SUBSTITUA AS FUNÇÕES ANTIGAS POR ESTAS) ---
+
 function fazerLogin() {
-    const email = document.getElementById('email-input').value;
-    const pass = document.getElementById('senha-input').value;
+    // .trim() remove espaços em branco do começo e do fim
+    const email = document.getElementById('email-input').value.trim();
+    const pass = document.getElementById('senha-input').value.trim();
     const msg = document.getElementById('msg-erro');
     
+    // Validação básica antes de enviar pro Firebase
+    if (!email || !pass) {
+        msg.innerText = "Por favor, preencha E-mail e Senha.";
+        return;
+    }
+
     auth.signInWithEmailAndPassword(email, pass)
         .catch((error) => {
-            msg.innerText = "Erro: " + error.message;
+            console.error(error.code); // Ajuda a ver o erro no console
+            
+            // Mensagens de erro mais amigáveis
+            if (error.code === 'auth/invalid-email') {
+                msg.innerText = "Formato de e-mail inválido (verifique espaços ou @).";
+            } else if (error.code === 'auth/user-not-found') {
+                msg.innerText = "Usuário não encontrado. Crie uma conta.";
+            } else if (error.code === 'auth/wrong-password') {
+                msg.innerText = "Senha incorreta.";
+            } else {
+                msg.innerText = "Erro: " + error.message;
+            }
         });
 }
 
 function criarConta() {
-    const email = document.getElementById('email-input').value;
-    const pass = document.getElementById('senha-input').value;
+    const email = document.getElementById('email-input').value.trim();
+    const pass = document.getElementById('senha-input').value.trim();
     const msg = document.getElementById('msg-erro');
+
+    if (!email || !pass) {
+        msg.innerText = "Preencha E-mail e Senha para criar conta.";
+        return;
+    }
+
+    if (pass.length < 6) {
+        msg.innerText = "A senha precisa ter pelo menos 6 caracteres.";
+        return;
+    }
 
     auth.createUserWithEmailAndPassword(email, pass)
         .catch((error) => {
-            msg.innerText = "Erro ao criar: " + error.message;
+            if (error.code === 'auth/email-already-in-use') {
+                msg.innerText = "Este e-mail já está cadastrado.";
+            } else if (error.code === 'auth/invalid-email') {
+                msg.innerText = "E-mail inválido.";
+            } else {
+                msg.innerText = "Erro ao criar: " + error.message;
+            }
         });
 }
 
