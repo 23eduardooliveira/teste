@@ -458,6 +458,12 @@ window.addEventListener('DOMContentLoaded', () => {
    ================================================================================ */
 
 // 1. COLETAR ESSES DADOS NO CONSOLE DO FIREBASE (Configurações do Projeto)
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyB4tfFp463ZwSHTW22uiyV35GwdlCEgk8k",
   authDomain: "ficha-rpg-3112e.firebaseapp.com",
@@ -467,8 +473,8 @@ const firebaseConfig = {
   appId: "1:1009323913618:web:202ed84838549bf990514b"
 };
 
-// Inicializa Firebase
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 let usuarioAtual = null;
