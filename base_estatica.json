@@ -1,0 +1,71 @@
+{
+  "nome": "Personagem Exemplo",
+  "imagem": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFDMUMzQSIgc3Ryb2tlPSIjMDBGRkZGIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PHBhdGggZD0iTTQgMjF2LTFhNCA0IDAgMCAxIDQtNGg4YTQgNCAwIDAgMSA0IDR2MSIvPjwvc3ZnPg==",
+  "cabecalho": {
+    "talento": "Nenhum",
+    "ascensao": "Nenhuma",
+    "racial": "Humano",
+    "info": "Ficha base criada para testes."
+  },
+  "atributos": {
+    "Forca": { "valor": 1, "uso": 0 },
+    "Destreza": { "valor": 1, "uso": 0 },
+    "Agilidade": { "valor": 1, "uso": 0 },
+    "Resistencia": { "valor": 1, "uso": 0 },
+    "Espírito": { "valor": 1, "uso": 0 },
+    "Carisma": { "valor": 1, "uso": 0 },
+    "Inteligencia": { "valor": 1, "uso": 0 }
+  },
+  "pericias": {
+    "principal": [
+      {
+        "nome": "Atletismo",
+        "raridade": "Comum",
+        "custo": 1
+      }
+    ],
+    "secundaria": [
+      {
+        "nome": "Percepção",
+        "raridade": "Comum",
+        "custo": 1
+      }
+    ],
+    "terciaria": []
+  },
+  "skills": [
+    {
+      "nome": "Golpe Básico",
+      "raridade": "Comum",
+      "tipo": "A",
+      "custoRecurso": "ST",
+      "descricao": "Um ataque simples com a arma.",
+      "modificadores": [
+        {
+          "categoria": "Efeitos Imediatos",
+          "nome": "Dano",
+          "rep": 1,
+          "baseCost": 1
+        }
+      ]
+    }
+  ],
+  "inventario": [
+    {
+      "categoria": "item",
+      "raridade": "Comum",
+      "nome": "Poção de Vida Menor",
+      "qtd": 3,
+      "desc": "Recupera um pouco de HP.",
+      "extra": ""
+    },
+    {
+      "categoria": "arma",
+      "raridade": "Comum",
+      "nome": "Faca de Combate",
+      "qtd": 1,
+      "desc": "Faca militar padrão.",
+      "extra": "1d4"
+    }
+  ]
+}

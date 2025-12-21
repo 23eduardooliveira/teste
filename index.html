@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha RPG Secundario</title>
+    <link rel="stylesheet" href="stilus.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A0A1F">
+    
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+    
+    <link rel="icon" type="image/png" href="icon-192.png">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <div id="login-modal" class="modal-overlay" style="display: flex;">
+    <div class="modal-content" style="max-width: 350px;">
+        <h2 id="login-title">Acesso RPG</h2>
+        <input type="email" id="email-input" class="inv-input" placeholder="E-mail" style="width: 100%; margin-bottom: 10px;">
+        <input type="password" id="senha-input" class="inv-input" placeholder="Senha" style="width: 100%; margin-bottom: 20px;">
+        
+        <button onclick="fazerLogin()" class="mod-btn" style="width: 100%; margin-bottom: 5px; border-color: var(--cor-destaque);">Entrar</button>
+        <button onclick="criarConta()" class="mod-btn" style="width: 100%; border-color: var(--cor-sucesso);">Criar Conta</button>
+        
+        <p id="msg-erro" style="color: var(--cor-perigo); margin-top: 10px; font-size: 0.8rem;"></p>
+    </div>
+</div>
+
+<div id="nuvem-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="width: 90%; max-width: 600px;">
+        <h3>Minhas Fichas na Nuvem</h3>
+        <div id="lista-fichas-nuvem" style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 15px;">
+            <p style="color: #aaa;">Carregando...</p>
+        </div>
+        <div class="modal-buttons">
+            <button onclick="fecharModalNuvem()" class="mod-btn">Fechar</button>
+            <button onclick="salvarNovaFichaNuvem()" class="mod-btn" style="border-color: var(--cor-destaque); color: var(--cor-destaque);">☁️ Salvar Atual na Nuvem</button>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        <h1>Ficha de Personagem</h1>
+
+        <div class="status-box ficha-header-box">
+            <div class="header-layout">
+                <div class="header-avatar-area">
+                    <div class="avatar-wrapper">
+                        <img id="char-image-display" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFDMUMzQSIgc3Ryb2tlPSIjMDBGRkZGIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PHBhdGggZD0iTTQgMjF2LTFhNCA0IDAgMCAxIDQtNGg4YTQgNCAwIDAgMSA0IDR2MSIvPjwvc3ZnPg==" alt="Avatar" onclick="document.getElementById('char-image-upload').click()">
+                        <div class="avatar-overlay" onclick="document.getElementById('char-image-upload').click()">📷</div>
+                    </div>
+                    <input type="file" id="char-image-upload" accept="image/*" onchange="carregarImagemPersonagem(event)">
+                </div>
+
+                <div class="header-data-area">
+                    <div class="nome-input-group">
+                        <input type="text" id="nome-personagem-input" placeholder="NOME DO PERSONAGEM" style="width: 100%; font-size: 1.2rem;">
+                        <div class="gestao-botoes">
+                            <button onclick="baixarFicha()" class="mod-btn compact-btn">💾 Baixar</button>
+                            <button onclick="abrirModalNuvem()" class="mod-btn compact-btn" style="border-color: var(--cor-treino);">☁️ Nuvem</button>
+                            <button onclick="fazerLogout()" class="mod-btn compact-btn" style="border-color: var(--cor-perigo);">Sair</button>
+                        </div>
+                    </div>
+
+                    <div class="header-info-row">
+                        <div class="info-group">
+                            <label>Talento</label>
+                            <textarea id="cabecalho-talento" class="auto-resize" rows="1"></textarea>
+                        </div>
+                        <div class="info-group">
+                            <label>Ascensão</label>
+                            <textarea id="cabecalho-ascensao" class="auto-resize" rows="1"></textarea>
+                        </div>
+                        <div class="info-group">
+                            <label>Racial</label>
+                            <textarea id="cabecalho-racial" class="auto-resize" rows="1"></textarea>
+                        </div>
+                        <div class="info-group" style="flex: 2;">
+                            <label>Info</label>
+                            <textarea id="cabecalho-info" class="auto-resize" rows="1"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recurso-box">
+            <div class="recurso-item">HP: <span id="hp-display">0</span></div>
+            <div class="recurso-item">ST: <span id="st-display">0</span></div>
+            <div class="recurso-item">MP: <span id="mp-display">0</span></div>
+            <div class="recurso-item">PSI: <span id="psi-display">0</span></div>
+        </div>
+
+        <div class="flex-container">
+            <div class="col-left">
+                <div class="status-box" id="atributos-container">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                        <h3>Atributos</h3>
+                        <div style="font-size: 0.85rem; color: #aaa;">
+                            Nível: <span id="nivel-display" style="color: var(--cor-destaque); font-weight: bold;">0.00</span> | 
+                            Pontos: <span id="total-pontos">0</span> | 
+                            Limites: <span id="limites-attr">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="atributo-row" data-nome="Forca"><label>Força</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Destreza"><label>Destreza</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Agilidade"><label>Agilidade</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Resistencia"><label>Resistência</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Espírito"><label>Espírito</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Carisma"><label>Carisma</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Inteligencia"><label>Inteligência</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn">Treinar</button></div></div>
+                </div>
+
+                <div class="status-box">
+                    <h3>Perícias</h3>
+                    <div class="pericia-header-editavel"><span class="pericia-icone">🥇</span> <input type="text" id="titulo-principal" class="pericia-titulo-input" value="Perícias Principais"> <span style="font-size: 0.8rem; color: #888;">(<span id="pericia-principal-gastos">0</span>/<span id="pericia-principal-pts">0</span>)</span></div>
+                    <div id="pericias-principal"></div>
+                    <button onclick="adicionarPericia('principal')" class="mod-btn compact-btn" style="width:100%; margin-top:5px;">+ Adicionar</button>
+
+                    <div class="pericia-header-editavel"><span class="pericia-icone">🥈</span> <input type="text" id="titulo-secundaria" class="pericia-titulo-input" value="Perícias Secundárias"> <span style="font-size: 0.8rem; color: #888;">(<span id="pericia-secundaria-gastos">0</span>/<span id="pericia-secundaria-pts">0</span>)</span></div>
+                    <div id="pericias-secundaria"></div>
+                    <button onclick="adicionarPericia('secundaria')" class="mod-btn compact-btn" style="width:100%; margin-top:5px;">+ Adicionar</button>
+
+                    <div class="pericia-header-editavel"><span class="pericia-icone">🥉</span> <input type="text" id="titulo-terciaria" class="pericia-titulo-input" value="Perícias Terciárias"> <span style="font-size: 0.8rem; color: #888;">(<span id="pericia-terciaria-gastos">0</span>/<span id="pericia-terciaria-pts">0</span>)</span></div>
+                    <div id="pericias-terciaria"></div>
+                    <button onclick="adicionarPericia('terciaria')" class="mod-btn compact-btn" style="width:100%; margin-top:5px;">+ Adicionar</button>
+                </div>
+            </div>
+
+            <div class="col-right">
+                
+                <div class="status-box">
+                    <div style="margin-bottom: 10px; border-bottom: 1px solid var(--cor-borda-escura); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0; border: none; padding: 0;">Skills</h2>
+                        <select id="filter-raridade" class="skill-select" onchange="organizarSkillsVisualmente()" style="width: auto; font-size: 0.8rem; background-color: rgba(0,0,0,0.3);">
+                            <option value="Todas">Todas as Raridades</option>
+                            <option value="Comum">Comum</option>
+                            <option value="Incomum">Incomum</option>
+                            <option value="Raro">Raro</option>
+                            <option value="Raríssima">Raríssima</option>
+                            <option value="Épico">Épico</option>
+                            <option value="Lendário">Lendário</option>
+                            <option value="Mítico">Mítico</option>
+                        </select>
+                        <span id="total-pontos-gastos" style="display:none;">0</span>
+                        <span id="skills-gastos" style="display:none;">0</span>
+                    </div>
+
+                    <div class="skill-tabs">
+                        <button id="tab-btn-ST" class="skill-tab-btn active" onclick="mudarAbaSkills('ST')">ST <span class="tab-count">[0]</span></button>
+                        <button id="tab-btn-MP" class="skill-tab-btn" onclick="mudarAbaSkills('MP')">MP <span class="tab-count">[0]</span></button>
+                        <button id="tab-btn-PSI" class="skill-tab-btn" onclick="mudarAbaSkills('PSI')">PSI <span class="tab-count">[0]</span></button>
+                    </div>
+
+                    <div class="sub-skill-tabs" style="display: flex; gap: 5px; margin-bottom: 15px; justify-content: center;">
+                        <button class="sub-tab-btn active" onclick="mudarSubAba('A')">Ativas</button>
+                        <button class="sub-tab-btn" onclick="mudarSubAba('P')">Passivas</button>
+                    </div>
+
+                    <div id="skills-view-area">
+                        <div id="container-visualizacao"></div>
+                    </div>
+                    <div id="skills-storage" style="display: none;"></div>
+
+                    <button onclick="adicionarSkill()" class="mod-btn" style="width: 100%; margin-top: 15px;">+ Nova Skill</button>
+                </div>
+
+                <div class="status-box">
+                    <div style="margin-bottom: 10px; border-bottom: 1px solid var(--cor-borda-escura); padding-bottom: 5px;">
+                        <h2 style="margin: 0; border: none; padding: 0;">Inventário</h2>
+                    </div>
+
+                    <div class="inv-form-header">
+                        <div style="flex-grow: 1;">
+                            <div style="display: flex; gap: 5px;">
+                                <select id="inv-categoria" class="inv-input">
+                                    <option value="item">Item</option>
+                                    <option value="arma">Arma</option>
+                                    <option value="armadura">Armadura</option>
+                                </select>
+                                <select id="inv-raridade" class="inv-input">
+                                    <option value="Comum">Comum</option>
+                                    <option value="Incomum">Incomum</option>
+                                    <option value="Raro">Raro</option>
+                                    <option value="Raríssima">Raríssima</option>
+                                    <option value="Épico">Épico</option>
+                                    <option value="Lendário">Lendário</option>
+                                    <option value="Mítico">Mítico</option>
+                                </select>
+                                <input type="number" id="inv-qtd" class="inv-input" value="1" min="1" placeholder="Qtd" style="width: 60px;">
+                            </div>
+                            <input type="text" id="inv-nome" class="inv-input" placeholder="Nome do Item" style="width: 100%; margin-top: 5px;">
+                            <div id="inv-campo-extra" style="margin-top: 5px;"></div>
+                            <textarea id="inv-desc" class="inv-input" rows="2" placeholder="Descrição do Item..." style="width: 100%; margin-top: 5px;"></textarea>
+                            <button onclick="adicionarItemInventario()" class="mod-btn adicionar-inv-btn" style="width: 100%; margin-top: 5px;">📥 Adicionar</button>
+                        </div>
+                    </div>
+                    <div id="inventario-container"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="cropper-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Ajustar Imagem</h3>
+            <div class="img-container-crop">
+                <img id="image-to-crop" src="" alt="Imagem para recortar">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="cancelarRecorte()" class="mod-btn" style="border-color: var(--cor-perigo); color: var(--cor-perigo);">Cancelar</button>
+                <button onclick="confirmarRecorte()" class="mod-btn" style="border-color: var(--cor-sucesso); color: var(--cor-sucesso);">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service Worker registrado!', reg))
+                    .catch((err) => console.log('Erro ao registrar SW:', err));
+            });
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

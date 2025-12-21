@@ -1,0 +1,184 @@
+/* =================================================
+--- MODELO CSS: CYBERPUNK NEON (45/55 SPLIT) ---
+=================================================
+*/
+
+:root {
+    --cor-fundo-principal: #0A0A1F; 
+    --cor-fundo-container: #1C1C3A; 
+    --cor-header-box: #252545;     
+    --cor-input-fundo: #0F0F2A;    
+    --cor-borda-escura: #404070;   
+    --cor-destaque: #00FFFF;       
+    --cor-texto-claro: #E0FFFF;    
+    --cor-sucesso: #00FF7F;        
+    --cor-alerta: #FFD700;         
+    --cor-perigo: #FF4444;         
+    --cor-treino: #00BFFF;         
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Consolas', 'Courier New', monospace; background-color: var(--cor-fundo-principal); color: var(--cor-texto-claro); padding: 10px; font-size: 14px; }
+
+h1, h2, h3 { text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; color: var(--cor-destaque); text-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+h1 { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--cor-borda-escura); padding-bottom: 10px; font-size: 1.5rem; }
+h2 { font-size: 1.1rem; border-left: 3px solid var(--cor-sucesso); padding-left: 10px; margin-top: 20px; }
+h3 { font-size: 1rem; color: var(--cor-sucesso); margin-top: 10px; }
+hr { border: 0; border-top: 1px solid var(--cor-borda-escura); margin: 15px 0; }
+
+.container { max-width: 1400px; margin: 0 auto; background-color: var(--cor-fundo-container); padding: 15px; border: 1px solid var(--cor-borda-escura); box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); border-radius: 5px; }
+
+/* --- AJUSTE DE COLUNAS 45/55 AQUI --- */
+.flex-container { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.col-left { flex: 45; min-width: 300px; }  /* 45% */
+.col-right { flex: 55; min-width: 300px; } /* 55% */
+
+/* HEADER E AVATAR */
+.status-box, .recurso-box { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--cor-borda-escura); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+.ficha-header-box { background-color: var(--cor-header-box); padding: 10px; }
+
+.header-layout { display: flex; gap: 15px; align-items: flex-start; }
+.header-avatar-area { flex-shrink: 0; width: 65px; }
+.avatar-wrapper { width: 100%; height: 65px; border: 2px solid var(--cor-destaque); border-radius: 4px; position: relative; overflow: hidden; background-color: #000; box-shadow: 0 0 8px rgba(0, 255, 255, 0.4); transition: box-shadow 0.3s; }
+.avatar-wrapper:hover { box-shadow: 0 0 15px var(--cor-destaque); }
+.avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.3s; font-size: 1.5rem; }
+.avatar-wrapper:hover .avatar-overlay { opacity: 1; }
+#char-image-upload { display: none; }
+
+.header-data-area { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+.nome-input-group { display: flex; align-items: center; gap: 10px; }
+.nome-input-group input { font-weight: bold; color: var(--cor-destaque); }
+.gestao-botoes { display: flex; gap: 5px; }
+
+.header-info-row { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; align-items: flex-start; }
+.info-group { display: flex; flex-direction: column; flex: 1; min-width: 100px; }
+.info-group label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; margin-bottom: 2px; }
+
+.info-group textarea.auto-resize { width: 100%; font-size: 0.9rem; padding: 6px; background-color: rgba(0, 0, 0, 0.3); border: 1px solid #444; overflow: hidden; resize: none; min-height: 38px; line-height: 1.4; border-radius: 3px; color: var(--cor-texto-claro); font-family: inherit; }
+.info-group textarea.auto-resize:focus { border-color: var(--cor-destaque); background: rgba(0,0,0,0.5); }
+
+/* RECURSOS */
+.recurso-box { display: flex; justify-content: space-around; font-weight: bold; font-size: 1.1rem; background: linear-gradient(90deg, #1C1C3A 0%, #252545 100%); }
+.recurso-item span { color: var(--cor-sucesso); text-shadow: 0 0 3px var(--cor-sucesso); }
+
+/* GERAL */
+input, select, textarea { background-color: var(--cor-input-fundo); border: 1px solid var(--cor-borda-escura); color: var(--cor-texto-claro); padding: 6px; font-family: inherit; border-radius: 3px; outline: none; transition: border-color 0.3s; }
+input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); }
+
+.mod-btn { background-color: var(--cor-borda-escura); color: var(--cor-texto-claro); border: 1px solid var(--cor-destaque); padding: 6px 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: all 0.2s; border-radius: 3px; text-align: center; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+.mod-btn:hover:not(:disabled) { background-color: var(--cor-destaque); color: #000; box-shadow: 0 0 8px var(--cor-destaque); }
+.mod-btn.compact-btn { padding: 2px 8px; font-size: 0.8rem; }
+
+.treinar-btn { background-color: rgba(0, 191, 255, 0.1); border: 1px solid var(--cor-treino); color: var(--cor-treino); padding: 4px 10px; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; text-transform: uppercase; font-weight: bold; }
+.treinar-btn:hover { background-color: var(--cor-treino); color: #000; box-shadow: 0 0 8px var(--cor-treino); }
+
+.aplicar-pontos-btn { background-color: rgba(255, 215, 0, 0.2) !important; border-color: var(--cor-alerta) !important; color: var(--cor-alerta) !important; animation: pulsar 1.5s infinite; }
+@keyframes pulsar { 0% { box-shadow: 0 0 2px var(--cor-alerta); } 50% { box-shadow: 0 0 10px var(--cor-alerta); } 100% { box-shadow: 0 0 2px var(--cor-alerta); } }
+
+.remover-pericia-btn, .remover-skill-btn, .remover-modificador-btn, .remover-inv-btn { background-color: transparent; border: 1px solid var(--cor-perigo); color: var(--cor-perigo); cursor: pointer; font-weight: bold; padding: 2px 8px; font-size: 0.8rem; border-radius: 3px; text-transform: uppercase; }
+.remover-pericia-btn:hover, .remover-skill-btn:hover, .remover-modificador-btn:hover, .remover-inv-btn:hover { background-color: var(--cor-perigo); color: #fff; box-shadow: 0 0 5px var(--cor-perigo); }
+
+.adicionar-mod-btn { background-color: transparent; border: 1px dashed var(--cor-sucesso); color: var(--cor-sucesso); width: 100%; padding: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; }
+.adicionar-mod-btn:hover { background-color: rgba(0, 255, 127, 0.1); border-style: solid; box-shadow: 0 0 5px var(--cor-sucesso); }
+
+/* ATRIBUTOS */
+.atributo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px; background-color: rgba(255, 255, 255, 0.03); border-radius: 4px; border-left: 2px solid transparent; gap: 10px; }
+.atributo-row.inspirado { border-left: 2px solid var(--cor-alerta); background-color: rgba(255, 215, 0, 0.05); }
+.atributo-row label { width: 110px; min-width: 110px; font-weight: bold; font-size: 0.95rem; }
+.atributo-input-group { display: flex; align-items: center; }
+.atributo-input { width: 45px; text-align: center; margin: 0 5px; font-weight: bold; font-size: 1.1rem; background: transparent; border: none; border-bottom: 1px solid #555; color: #fff; }
+.treino-info { font-size: 0.8rem; color: #aaa; display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex-grow: 1; }
+
+.pericia-header-editavel { display: flex; align-items: center; margin-top: 15px; margin-bottom: 5px; gap: 5px; }
+.pericia-icone { font-size: 1.2rem; }
+.pericia-titulo-input { background: transparent; border: none; color: var(--cor-destaque); font-size: 1rem; font-weight: bold; text-transform: uppercase; width: 100%; border-bottom: 1px solid #333; }
+.pericia-item { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
+.pericia-nome { flex-grow: 1; }
+.pericia-raridade { width: 100px; flex-shrink: 0; }
+
+/* SKILLS */
+.skill-item { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #333; padding: 10px; margin-bottom: 15px; border-radius: 4px; overflow: hidden; }
+.skill-item:hover { border-color: var(--cor-destaque); }
+.skill-header-row { margin-bottom: 8px; }
+
+/* Nome da Skill em Destaque */
+.skill-nome { 
+    font-weight: 900 !important; 
+    text-transform: uppercase;   
+    font-size: 1.15rem !important; 
+    color: var(--cor-destaque);
+    letter-spacing: 1px;
+    text-shadow: 0 0 2px rgba(0,0,0,0.8);
+}
+.skill-header-row input.skill-nome { background: transparent; border: none; border-bottom: 1px solid #444; padding: 5px 0; }
+.skill-header-row input.skill-nome:focus { border-color: var(--cor-destaque); background: rgba(0,0,0,0.2); }
+
+.skill-descricao { width: 100%; resize: vertical; font-size: 0.85rem; margin-bottom: 8px; background: rgba(0,0,0,0.2); }
+.skill-select { height: 28px; font-size: 0.85rem; padding: 0 4px; }
+.skill-input-num { width: 50px; text-align: center; }
+.skill-tags-and-costs-grid { background: rgba(255,255,255,0.02); padding: 8px; border-radius: 3px; }
+
+.modifier-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; width: 100%; }
+.modifier-entry { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; width: 100%; padding: 4px 0; border-bottom: 1px dashed #333; }
+.modifier-entry .mod-category-select { flex: 1 1 120px; min-width: 100px; max-width: 100%; }
+.modifier-entry .mod-name-select { flex: 2 1 150px; min-width: 120px; max-width: 100%; font-weight: bold; color: var(--cor-destaque); }
+.modifier-entry .skill-mod-group { flex: 0 0 auto; display: flex; align-items: center; gap: 2px; }
+.modifier-entry .remover-modificador-btn { flex: 0 0 auto; margin-left: auto; }
+
+/* ABAS */
+.skill-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid var(--cor-borda-escura); padding-bottom: 5px; }
+.skill-tab-btn { background: transparent; border: none; color: #666; padding: 8px 12px; cursor: pointer; font-weight: bold; flex: 1; border-bottom: 2px solid transparent; transition: all 0.3s; }
+.skill-tab-btn:hover { color: var(--cor-texto-claro); background-color: rgba(255, 255, 255, 0.05); }
+.skill-tab-btn.active { color: var(--cor-destaque); border-bottom-color: var(--cor-destaque); background-color: rgba(0, 255, 255, 0.05); text-shadow: 0 0 5px var(--cor-destaque); }
+
+.tab-count { font-size: 0.8rem; opacity: 0.7; margin-left: 5px; color: var(--cor-sucesso); }
+
+.sub-tab-btn { background: transparent; border: 1px solid var(--cor-borda-escura); color: #888; padding: 4px 15px; cursor: pointer; font-size: 0.8rem; border-radius: 15px; transition: all 0.3s; text-transform: uppercase; }
+.sub-tab-btn:hover { border-color: var(--cor-texto-claro); color: var(--cor-texto-claro); }
+.sub-tab-btn.active { background-color: var(--cor-destaque); color: #000; border-color: var(--cor-destaque); font-weight: bold; box-shadow: 0 0 8px var(--cor-destaque); }
+
+#container-visualizacao:empty::after { content: "Nenhuma habilidade nesta categoria."; display: block; color: #444; font-size: 0.8rem; font-style: italic; padding: 10px; text-align: center; }
+
+/* INVENTÁRIO (COM ÍCONES) */
+.inv-form-header { display: flex; gap: 5px; margin-bottom: 5px; }
+.inv-item { background-color: rgba(255, 255, 255, 0.05); border: 1px solid #444; padding: 8px; margin-bottom: 5px; border-radius: 3px; }
+.inv-header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.inv-left-group { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+.inv-equip-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--cor-destaque); margin: 0; }
+.inv-contador-group { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.inv-nome-display { font-family: inherit; font-size: 1rem; margin-right: 5px; }
+.inv-stats-row { font-size: 0.75rem; color: #888; margin-top: 2px; }
+.inv-desc-display { font-size: 0.85rem; color: #aaa; font-style: italic; margin-top: 8px; padding-left: 24px; white-space: pre-wrap; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
+
+/* Ícones */
+.inv-icon-selector-area { margin-top: 5px; border: 1px solid #333; padding: 5px; border-radius: 3px; background: rgba(0,0,0,0.2); }
+.inv-icon-grid { display: flex; gap: 5px; flex-wrap: wrap; }
+.inv-icon-option { width: 30px; height: 30px; border: 1px solid #444; padding: 2px; cursor: pointer; border-radius: 3px; opacity: 0.6; transition: all 0.2s; }
+.inv-icon-option:hover { opacity: 1; border-color: var(--cor-texto-claro); }
+.inv-icon-option.selected { opacity: 1; border-color: var(--cor-destaque); background-color: rgba(0, 255, 255, 0.1); box-shadow: 0 0 5px var(--cor-destaque); }
+.inv-icon-option svg { width: 100%; height: 100%; }
+
+/* MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+.modal-content { background-color: var(--cor-fundo-container); border: 2px solid var(--cor-destaque); padding: 20px; border-radius: 5px; width: 90%; max-width: 500px; box-shadow: 0 0 20px var(--cor-destaque); text-align: center; }
+.img-container-crop { max-height: 400px; margin-bottom: 20px; overflow: hidden; background-color: #000; }
+.img-container-crop img { max-width: 100%; display: block; }
+.modal-buttons { display: flex; justify-content: space-between; gap: 10px; }
+.modal-buttons button { flex: 1; font-size: 1rem; padding: 10px; }
+
+@media (max-width: 768px) {
+    .container { padding: 10px; width: 100%; border: none; }
+    .flex-container { flex-direction: column; gap: 15px; }
+    .col-left, .col-right { flex: 1 1 100%; width: 100%; }
+    .header-layout { flex-direction: row; }
+    .header-avatar-area { margin-bottom: 0; }
+    .header-info-row { flex-direction: column; gap: 8px; }
+    .atributo-row { flex-wrap: wrap; }
+    .treino-info { width: 100%; justify-content: space-between; margin-top: 5px; padding-top: 5px; border-top: 1px solid #333; }
+    .skill-tags-and-costs-grid { display: flex !important; flex-direction: column; }
+    .skill-tag-group, .skill-cost-group, .skill-nerf-group { width: 100%; margin-bottom: 5px; }
+    .skill-select, .skill-input-num { width: 100%; }
+    .inv-header-row { flex-wrap: wrap; }
+    .inv-contador-group { margin-left: auto; }
+}
