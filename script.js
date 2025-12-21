@@ -459,12 +459,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // 1. COLETAR ESSES DADOS NO CONSOLE DO FIREBASE (Configurações do Projeto)
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY_AQUI",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_ID_DO_PROJETO",
-  storageBucket: "SEU_PROJETO.firebasestorage.app",
-  messagingSenderId: "NUMEROS...",
-  appId: "ID_DO_APP..."
+  apiKey: "AIzaSyB4tfFp463ZwSHTW22uiyV35GwdlCEgk8k",
+  authDomain: "ficha-rpg-3112e.firebaseapp.com",
+  projectId: "ficha-rpg-3112e",
+  storageBucket: "ficha-rpg-3112e.firebasestorage.app",
+  messagingSenderId: "1009323913618",
+  appId: "1:1009323913618:web:202ed84838549bf990514b"
 };
 
 // Inicializa Firebase
