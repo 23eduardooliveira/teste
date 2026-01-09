@@ -316,21 +316,30 @@
                 </div>
 
                 <div id="modal-inv-extra-container"></div>
+
+                <label>Descrição do Item (Lore/Regras):</label>
+                <textarea id="modal-inv-desc" rows="2" style="width: 100%;" placeholder="Descrição que aparece na ficha..."></textarea>
                 
-                <div style="border: 1px dashed #aaa; padding: 5px; border-radius: 4px;">
-                    <label>Imagem do Item:</label>
-                    <div style="display:flex; gap:5px; margin-top:5px;">
+                <hr style="margin: 5px 0; border-color: #ccc;">
+
+                <div style="border: 1px dashed #aaa; padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.02);">
+                    <label style="color: var(--cor-magia); font-weight: bold;">Descrição Visual para a IA (Opcional):</label>
+                    <textarea id="modal-img-prompt" rows="2" style="width: 100%; font-size: 0.9rem; border: 1px solid var(--cor-magia);" placeholder="Ex: Uma espada feita de cristal azul brilhante, com raios saindo da lâmina..."></textarea>
+                    
+                    <div style="display:flex; gap:5px; margin-top:8px; align-items: center;">
+                        <button onclick="gerarImagemIA()" id="btn-gerar-ia" class="mod-btn compact-btn" style="background: #6a5acd; color: white; flex-grow: 1;">✨ Gerar com essa Descrição</button>
+                        
+                        <span style="font-size: 0.8rem;">ou</span>
+                        
                         <button onclick="document.getElementById('modal-img-upload').click()" class="mod-btn compact-btn">📁 Importar</button>
-                        <button onclick="gerarImagemIA()" id="btn-gerar-ia" class="mod-btn compact-btn" style="background: #6a5acd; color: white;">✨ Gerar IA</button>
                     </div>
+                    
                     <input type="file" id="modal-img-upload" accept="image/*" style="display:none;" onchange="previewItemImage(event)">
-                    <div id="modal-img-preview-box" style="margin-top:5px; display:none; justify-content:center;">
-                        <img id="modal-img-preview" src="" style="max-width: 80px; max-height: 80px; border:1px solid #333;">
+                    
+                    <div id="modal-img-preview-box" style="margin-top:5px; display:none; justify-content:center; flex-direction: column; align-items: center;">
+                        <img id="modal-img-preview" src="" style="max-width: 100px; max-height: 100px; border:1px solid #333; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);">
                     </div>
                 </div>
-
-                <label>Descrição:</label>
-                <textarea id="modal-inv-desc" rows="3" style="width: 100%;"></textarea>
             </div>
             
             <div class="modal-buttons" style="margin-top: 15px;">
