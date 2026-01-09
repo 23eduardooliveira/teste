@@ -497,3 +497,56 @@ window.addEventListener('DOMContentLoaded', () => {
     organizarSkillsVisualmente();
     atualizarSistemaCompleto();
 });
+
+const CACHE_NAME = 'grimorio-medieval-v2'; // Mudei para v2 para atualizar
+const ASSETS_TO_CACHE = [
+    './',
+    './index.html',
+    './stilus.css',
+    './script.js',
+    './manifest.json',
+    './icon-192.png', // Ícone solicitado
+    './icon-512.png', // Ícone solicitado
+    
+    // Bibliotecas Externas (CDN)
+    'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js',
+    'https://unpkg.com/@popperjs/core@2',
+    'https://unpkg.com/tippy.js@6',
+    'https://cdn.jsdelivr.net/npm/chart.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+    
+    // Fontes Google (Opcional, mas recomendado para offline)
+    'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap'
+];
+
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('Arquivos cacheados com sucesso!');
+            return cache.addAll(ASSETS_TO_CACHE);
+        })
+    );
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            // Retorna do cache se existir, senão busca na rede
+            return response || fetch(event.request);
+        })
+    );
+});
+
+// Limpa caches antigos (importante pois mudamos a versão para v2)
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                if (key !== CACHE_NAME) {
+                    return caches.delete(key);
+                }
+            }));
+        })
+    );
+});
