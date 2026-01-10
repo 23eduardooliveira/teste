@@ -237,33 +237,13 @@
 
                         <hr>
 
-                        <h3>Consumíveis</h3>
-                        <div class="consumiveis-row">
-                            <div class="consumivel-compacto" id="con-slot-1">
-                                <div class="equip-slot" onclick="cliqueSlot('consumivel', 'slot-cons1')" id="slot-cons1">
-                                    <img src="" class="slot-img">
-                                    <span class="slot-placeholder">🧪</span>
-                                    <span class="cons-qtd-badge" id="qtd-cons1">0</span>
-                                </div>
-                                <button class="mod-btn btn-usar-mini" onclick="usarConsumivel('slot-cons1')">Usar</button>
-                            </div>
-                            <div class="consumivel-compacto" id="con-slot-2">
-                                <div class="equip-slot" onclick="cliqueSlot('consumivel', 'slot-cons2')" id="slot-cons2">
-                                    <img src="" class="slot-img">
-                                    <span class="slot-placeholder">🧪</span>
-                                    <span class="cons-qtd-badge" id="qtd-cons2">0</span>
-                                </div>
-                                <button class="mod-btn btn-usar-mini" onclick="usarConsumivel('slot-cons2')">Usar</button>
-                            </div>
-                            <div class="consumivel-compacto" id="con-slot-3">
-                                <div class="equip-slot" onclick="cliqueSlot('consumivel', 'slot-cons3')" id="slot-cons3">
-                                    <img src="" class="slot-img">
-                                    <span class="slot-placeholder">🧪</span>
-                                    <span class="cons-qtd-badge" id="qtd-cons3">0</span>
-                                </div>
-                                <button class="mod-btn btn-usar-mini" onclick="usarConsumivel('slot-cons3')">Usar</button>
-                            </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+                            <h3>Consumíveis</h3>
+                            <button onclick="adicionarNovoSlotConsumivel()" class="mod-btn compact-btn" title="Adicionar Slot" style="border-radius:50%; width:25px; height:25px; line-height:1; padding:0;">+</button>
                         </div>
+                        
+                        <div id="consumiveis-grid" class="consumiveis-row">
+                            </div>
                     </div>
 
                     <div class="split-col">
