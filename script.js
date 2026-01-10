@@ -707,11 +707,11 @@ function deletarDaNuvem(idDoc) { if(confirm("Apagar ficha da nuvem?")) { db.coll
 function atualizarGrafico() { const ctx = document.getElementById('graficoAtributos'); if (!ctx) return; const dados = [ getAttrValue("Forca"), getAttrValue("Destreza"), getAttrValue("Agilidade"), getAttrValue("Resistencia"), getAttrValue("Espírito"), getAttrValue("Carisma"), getAttrValue("Inteligencia") ]; if (graficoInstance) { graficoInstance.data.datasets[0].data = dados; graficoInstance.update(); return; } graficoInstance = new Chart(ctx, { type: 'radar', data: { labels: ['FOR', 'DES', 'AGI', 'RES', 'ESP', 'CAR', 'INT'], datasets: [{ label: 'Nível', data: dados, backgroundColor: 'rgba(139, 0, 0, 0.4)', borderColor: '#8B0000', borderWidth: 2, pointBackgroundColor: '#B8860B', pointBorderColor: '#2E2315' }] }, options: { scales: { r: { angleLines: { color: 'rgba(0,0,0,0.2)' }, grid: { color: 'rgba(0,0,0,0.1)' }, pointLabels: { color: '#5c0a0a', font: { size: 12, family: 'Cinzel' } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 10 } }, plugins: { legend: { display: false } } } }); }
 function gerarPDF() { const elemento = document.querySelector(".container"); const opt = { margin: [5, 5, 5, 5], filename: 'Grimorio.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#e3dcd2', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(elemento).save(); }
 
-// --- FUNÇÃO DE GERAÇÃO DE IMAGEM IA (MODELO NANOBANANA-PRO) ---
-
+// --- FUNÇÃO DE GERAÇÃO DE IMAGEM IA (ATUALIZADA COM PROMPT VISUAL) ---
 async function gerarImagemIA() {
     const nome = document.getElementById('modal-inv-nome').value;
-    const desc = document.getElementById('modal-inv-desc').value;
+    const descGeral = document.getElementById('modal-inv-desc').value;
+    const descVisual = document.getElementById('modal-img-prompt').value; // Novo Campo
     const tipo = document.getElementById('modal-inv-categoria').value;
     const btn = document.getElementById('btn-gerar-ia');
 
@@ -724,16 +724,25 @@ async function gerarImagemIA() {
     btn.innerText = "⏳ Criando...";
     btn.disabled = true;
 
-    // 1. Monta o Prompt
-    const promptBase = `RPG item icon, ${tipo}, ${nome}, ${desc}, white background, fantasy art style, high quality, 2d game asset, no text, centered`;
+    // LÓGICA DO PROMPT:
+    // Se o usuário escreveu algo na "Descrição Visual", usamos ela.
+    // Se não, usamos a descrição geral + nome.
+    let textoParaIA = "";
+    if (descVisual && descVisual.trim() !== "") {
+        textoParaIA = descVisual;
+    } else {
+        textoParaIA = `${nome}, ${descGeral}`;
+    }
+
+    // Monta o Prompt final
+    const promptBase = `RPG item icon, ${tipo}, ${textoParaIA}, white background, fantasy art style, high quality, 2d game asset, no text, centered, full color`;
     const promptEncoded = encodeURIComponent(promptBase);
-    const seed = Math.floor(Math.random() * 99999);
+    const seed = Math.floor(Math.random() * 999999);
     
-    // 2. URL COM NANOBANANA-PRO (Modelo Avançado)
+    // URL COM NANOBANANA-PRO
     const url = `https://image.pollinations.ai/prompt/${promptEncoded}?width=256&height=256&seed=${seed}&model=nanobanana-pro&nologo=true`;
 
     try {
-        // Tentativa 1: Baixar (Salvar Offline)
         const response = await fetch(url);
         if (!response.ok) throw new Error("Erro na API");
 
@@ -750,13 +759,36 @@ async function gerarImagemIA() {
     } catch (error) {
         console.warn("Erro ao baixar (CORS) ou Modelo Premium. Usando link direto.", error);
         
-        // Tentativa 2: Link Direto
         tempItemImage = url; 
         mostrarPreview(url);
         finalizarBotao(btn, textoOriginal);
-        
         avisarLinkOnline();
     }
+}
+
+// Atualizar também a função de abrir o modal para limpar o campo novo
+function abrirModalItem() {
+    document.getElementById('modal-inv-nome').value = '';
+    document.getElementById('modal-inv-qtd').value = 1;
+    document.getElementById('modal-inv-desc').value = '';
+    
+    // LIMPAR O NOVO CAMPO
+    if(document.getElementById('modal-img-prompt')) {
+        document.getElementById('modal-img-prompt').value = '';
+    }
+
+    document.getElementById('modal-inv-categoria').value = 'arma';
+    document.getElementById('modal-img-preview').src = '';
+    document.getElementById('modal-img-preview-box').style.display = 'none';
+    document.getElementById('modal-img-upload').value = '';
+    tempItemImage = null;
+    
+    // Limpar avisos antigos
+    const aviso = document.getElementById('aviso-link');
+    if(aviso) aviso.remove();
+    
+    handleModalCategoryChange();
+    document.getElementById('item-modal').style.display = 'flex';
 }
 
 function mostrarPreview(src) {
