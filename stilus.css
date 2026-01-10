@@ -1,5 +1,5 @@
 /* =================================================
-   MODELO CSS: GRIMÓRIO MEDIEVAL (FINAL)
+   MODELO CSS: GRIMÓRIO MEDIEVAL (FINAL BLINDADO)
    ================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
@@ -19,6 +19,7 @@
     --cor-magia: #483d8b;              
 }
 
+/* REGRA DE OURO PARA NÃO VAZAR */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Crimson Text', serif; }
 
 body {
@@ -29,6 +30,7 @@ body {
     justify-content: center;
     min-height: 100vh;
     padding-bottom: 50px;
+    overflow-x: hidden; /* Impede a página inteira de criar scroll lateral indesejado */
 }
 
 h1, h2, h3 { font-family: 'Cinzel', serif; color: var(--cor-titulo); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
@@ -70,6 +72,8 @@ button { cursor: pointer; font-family: 'Cinzel', serif; transition: all 0.2s; }
     border-radius: 2px;
     border: 1px solid var(--cor-borda-forte);
     position: relative;
+    /* Ajuste de segurança */
+    overflow: hidden; 
 }
 .container::before {
     content: ''; position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px;
@@ -90,11 +94,11 @@ button { cursor: pointer; font-family: 'Cinzel', serif; transition: all 0.2s; }
 .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
 #char-image-upload { display: none; }
 
-.header-info-box { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
+.header-info-box { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; width: 100%; } /* Width 100% evita quebra */
 .nome-input-group { width: 100%; }
 .nome-input-group input { width: 100%; background: transparent; border: none; border-bottom: 3px double var(--cor-titulo); font-family: 'Cinzel', serif; font-size: 2.2rem; color: var(--cor-titulo); font-weight: 700; text-align: left; outline: none; }
 .header-info-row { display: flex; gap: 15px; width: 100%; }
-.info-group { flex: 1; display: flex; flex-direction: column; }
+.info-group { flex: 1; display: flex; flex-direction: column; min-width: 0; /* Permite encolher em telas pequenas */ }
 .info-group label { font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--cor-borda-forte); letter-spacing: 1px; }
 .auto-resize { width: 100%; resize: none; overflow: hidden; min-height: 25px; background: transparent; border: none; border-bottom: 1px dashed var(--cor-borda-sutil); font-family: 'Crimson Text', serif; font-size: 1.1rem; color: var(--cor-texto-principal); outline: none; transition: border-color 0.3s; }
 .auto-resize:focus { border-bottom: 1px solid var(--cor-destaque); }
@@ -117,17 +121,41 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
 .rec-btn-danger { background: var(--cor-perigo); }
 .rec-btn-success { background: var(--cor-sucesso); }
 
-/* ABAS */
-.tabs-principal { display: flex; gap: 4px; margin-bottom: 25px; flex-wrap: wrap; border-bottom: 3px solid var(--cor-borda-forte); }
-.tab-principal-btn { padding: 12px 25px; background: var(--cor-borda-sutil); border: 1px solid var(--cor-borda-forte); border-bottom: none; border-radius: 6px 6px 0 0; font-weight: bold; color: #2e2315; opacity: 0.8; font-size: 0.9rem; }
+/* --- ABAS (CARROSSEL HORIZONTAL NO MOBILE) --- */
+.tabs-principal { 
+    display: flex; 
+    gap: 4px; 
+    margin-bottom: 25px; 
+    flex-wrap: nowrap; /* Garante linha única para scroll */
+    overflow-x: auto; /* Habilita scroll lateral */
+    border-bottom: 3px solid var(--cor-borda-forte); 
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch; /* Suavidade no iOS */
+    scrollbar-width: none; /* Firefox */
+}
+.tabs-principal::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+.tab-principal-btn { 
+    flex: 0 0 auto; /* Não encolhe */
+    padding: 12px 25px; 
+    background: var(--cor-borda-sutil); 
+    border: 1px solid var(--cor-borda-forte); 
+    border-bottom: none; 
+    border-radius: 6px 6px 0 0; 
+    font-weight: bold; 
+    color: #2e2315; 
+    opacity: 0.8; 
+    font-size: 0.9rem; 
+    white-space: nowrap; /* Texto não quebra */
+}
 .tab-principal-btn:hover { opacity: 1; background: var(--cor-papel-escuro); }
 .tab-principal-btn.active { background: var(--cor-destaque); color: #fff; opacity: 1; border-color: var(--cor-borda-forte); transform: translateY(2px); }
 
-/* COLUNAS */
+/* COLUNAS (LAYOUT DESKTOP) */
 .split-columns { display: flex; gap: 30px; }
-.split-col { flex: 1; }
+.split-col { flex: 1; min-width: 0; /* Evita que o flex item force largura */ }
 
-/* ATRIBUTOS */
+/* ATRIBUTOS (BASE) */
 .atributo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px 12px; border-bottom: 1px solid rgba(94, 75, 53, 0.2); transition: background 0.3s; background: rgba(255,255,255,0.1); border-radius: 4px; }
 .atributo-row:hover { background: rgba(184, 134, 11, 0.1); }
 .atributo-row.inspirado { background: rgba(255, 215, 0, 0.2); border: 1px solid var(--cor-destaque); }
@@ -158,6 +186,7 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
     background: rgba(0,0,0,0.05);
     border-radius: 8px;
     border: 1px solid rgba(94, 75, 53, 0.1);
+    flex-wrap: wrap; /* Permite quebrar se necessário */
 }
 
 .doll-column { display: flex; flex-direction: column; gap: 12px; width: 70px; }
@@ -174,6 +203,7 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
     position: relative;
     cursor: pointer;
     box-shadow: 0 0 20px rgba(0,0,0,0.7);
+    max-width: 100%; /* Segurança */
 }
 .char-portrait-vertical img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
 .char-portrait-vertical:hover img { transform: scale(1.05); }
@@ -183,6 +213,7 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
 .slot-wrapper { display: flex; flex-direction: column; align-items: center; }
 .slot-wrapper label { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; color: var(--cor-borda-forte); }
 
+/* SLOT PADRÃO */
 .equip-slot {
     width: 64px; height: 64px;
     background-color: rgba(46, 35, 21, 0.85);
@@ -192,6 +223,7 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
     cursor: pointer; position: relative;
     transition: all 0.2s;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    flex-shrink: 0; /* Importante para não amassar */
 }
 .equip-slot:hover { border-color: var(--cor-destaque); box-shadow: 0 0 15px var(--cor-destaque); }
 .slot-img { width: 100%; height: 100%; object-fit: cover; display: none; z-index: 2; border-radius: 2px; }
@@ -199,219 +231,38 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
 .slot-placeholder { font-size: 1.8rem; opacity: 0.2; position: absolute; z-index: 1; filter: grayscale(100%); }
 .slot-name-display { font-size: 0.65rem; margin-top: 3px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 70px; font-weight: bold; }
 
-.consumiveis-row { display: flex; flex-direction: row; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
-.consumivel-compacto { display: flex; flex-direction: column; align-items: center; width: 70px; background: rgba(255,255,255,0.1); padding: 6px; border-radius: 6px; border: 1px solid var(--cor-borda-sutil); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+/* CONSUMÍVEIS (LINHA/GRADE) */
+.consumiveis-row, #consumiveis-grid { 
+    display: flex; 
+    flex-direction: row; 
+    justify-content: center; 
+    gap: 10px; 
+    flex-wrap: wrap; /* Essencial para não vazar */
+    margin-top: 15px; 
+    width: 100%;
+}
+.consumivel-compacto { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    width: auto; 
+    background: rgba(255,255,255,0.1); 
+    padding: 6px; 
+    border-radius: 6px; 
+    border: 1px solid var(--cor-borda-sutil); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    margin-bottom: 5px;
+}
 .consumivel-compacto .equip-slot { width: 45px; height: 45px; margin-bottom: 5px; border-color: var(--cor-borda-sutil); background-color: rgba(46, 35, 21, 0.6); }
 .btn-usar-mini { width: 100%; font-size: 0.7rem !important; padding: 3px 0 !important; height: auto; border: none; background: var(--cor-borda-forte); color: #e8dfc8; border-radius: 3px; text-transform: uppercase; }
 .cons-qtd-badge { position: absolute; top: -6px; right: -6px; background: var(--cor-perigo); color: white; border: 1px solid #fff; font-size: 0.75rem; padding: 1px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); z-index: 5; font-family: 'Cinzel', serif; }
 
-/* BATALHA STATS */
-.battle-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.battle-group { background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid rgba(0,0,0,0.1); }
-.battle-group label { display: block; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; color: var(--cor-borda-forte); margin-bottom: 2px; }
-.batalha-input { width: 100%; background: transparent; border: none; text-align: center; font-weight: bold; font-size: 1.2rem; font-family: 'Cinzel', serif; color: var(--cor-titulo); }
-
-/* SKILLS */
-.skill-tabs, .sub-tab-btn { margin-bottom: 15px; }
-.skill-tab-btn { padding: 6px 12px; border: 1px solid var(--cor-borda-sutil); background: #dcd0c0; border-radius: 3px; font-size: 0.85rem; font-weight: bold; }
-.skill-tab-btn.active, .sub-tab-btn.active { background: var(--cor-destaque); color: #fff; border-color: #8b6508; text-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
-
-.skill-item { 
-    background: rgba(244, 240, 230, 0.6); 
-    border: 1px solid var(--cor-borda-sutil); 
-    padding: 8px; margin-bottom: 8px; border-radius: 4px; 
-    box-shadow: 1px 1px 3px rgba(0,0,0,0.1); 
-    position: relative;
-    transition: all 0.2s;
-}
-
-.skill-header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.skill-nome-container { display: flex; align-items: center; flex-grow: 1; }
-.skill-nome { font-weight: bold; border: none; width: 100%; background: transparent; font-size: 1rem; font-family: 'Cinzel', serif; color: #2e2315; }
-.skill-header-info { display: flex; align-items: center; gap: 12px; }
-.header-rarity-display { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-.header-cost-box { display: flex; flex-direction: column; align-items: flex-end; line-height: 0.9; border-left: 1px solid #ccc; padding-left: 8px; }
-.header-cost-val { font-family: 'Cinzel', serif; }
-.remover-skill-btn { color: #999; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; margin-left: 5px; }
-.toggle-skill-btn { background: none; border: none; font-size: 0.8rem; color: var(--cor-borda-forte); margin-right: 5px; cursor: pointer; }
-
-.skill-item.collapsed .skill-main-content, 
-.skill-item.collapsed .skill-modificadores-container { display: none; }
-.skill-item.collapsed .toggle-skill-btn { transform: rotate(-90deg); }
-
-.skill-main-content { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.2); }
-.skill-controls-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
-.skill-cost-detail { display: flex; align-items: center; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
-.skill-input-num { width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; font-size: 1rem; color: var(--cor-destaque); }
-.skill-descricao { width: 100%; min-height: 50px; font-size: 0.9rem; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background: rgba(255,255,255,0.4); font-style: italic; }
-.skill-modificadores-container { margin-top: 10px; background: rgba(255,255,255,0.3); padding: 5px; border-radius: 4px; }
-.modifier-entry { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.7); border: 1px solid #ddd; padding: 4px; margin-bottom: 4px; border-radius: 3px; flex-wrap: wrap; }
-.skill-select { padding: 2px; border: 1px solid #ccc; font-size: 0.8rem; max-width: 130px; }
-.skill-mod-group { display: flex; align-items: center; font-size: 0.8rem; }
-.remover-modificador-btn { background: var(--cor-perigo); color: white; border: none; width: 20px; height: 20px; border-radius: 50%; font-size: 0.7rem; margin-left: auto; }
-
-.mod-btn { background: #f0e6d2; border: 1px solid var(--cor-borda-sutil); padding: 6px 14px; border-radius: 3px; color: var(--cor-texto-principal); font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-.mod-btn:hover { background: #fff; border-color: var(--cor-destaque); }
-.adicionar-inv-btn { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px; }
-
-/* --- INVENTÁRIO (ATUALIZADO E FINAL) --- */
-.inv-tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
-.inv-tab-btn { padding: 6px 12px; background: var(--cor-borda-sutil); border: none; border-radius: 4px; font-size: 0.85rem; font-weight: bold; color: #2e2315; }
-.inv-tab-btn.active { background: var(--cor-titulo); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-
-.inv-item { 
-    background: linear-gradient(to right, #fdfbf7, #f4f0e6); 
-    border: 1px solid var(--cor-borda-sutil); 
-    margin-bottom: 8px; 
-    padding: 8px; 
-    border-radius: 4px; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    position: relative; /* Para posicionar os botões absolutos */
-}
-
-/* Linha principal: Imagem + Texto */
-.inv-main-row {
-    display: flex;
-    align-items: flex-start; /* Alinha ao topo */
-    gap: 12px;
-    padding-right: 60px; /* Espaço para os botões no canto direito */
-}
-
-/* Wrapper da Imagem com Upload */
-.inv-img-wrapper {
-    position: relative;
-    width: 45px;
-    height: 45px;
-    flex-shrink: 0;
-    border: 1px solid var(--cor-borda-forte);
-    border-radius: 3px;
-    background: #ddd;
-    cursor: pointer;
-}
-.inv-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-/* Ícone de câmera no hover da imagem do inventário */
-.inv-img-upload-icon {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    color: white;
-    display: flex; justify-content: center; align-items: center;
-    font-size: 1.2rem;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.inv-img-wrapper:hover .inv-img-upload-icon { opacity: 1; }
-
-/* Informações de Texto */
-.inv-info-col { display: flex; flex-direction: column; }
-.inv-nome-linha {
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    color: var(--cor-texto-principal);
-    font-weight: bold;
-    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
-}
-.inv-raridade-text {
-    font-size: 0.75rem;
-    font-family: 'Crimson Text', serif;
-    text-transform: uppercase;
-    color: #666;
-    font-weight: normal;
-}
-.inv-stats-text { font-size: 0.75rem; color: #555; margin-top: 2px; }
-
-/* Grupo de Botões (+/-) no Canto Superior Direito */
-.inv-contador-absolute {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    background: rgba(255,255,255,0.6);
-    padding: 2px;
-    border-radius: 4px;
-    border: 1px solid rgba(0,0,0,0.1);
-}
-.inv-qtd-display { font-size: 0.8rem; font-weight: bold; min-width: 20px; text-align: center; color: var(--cor-titulo); }
-
-/* Botões bem pequenos */
-.btn-qtd-mini {
-    padding: 0px 6px;
-    font-size: 0.8rem;
-    height: 20px;
-    line-height: 18px;
-    border: 1px solid #aaa;
-    background: #e0d0b0;
-    border-radius: 3px;
-    cursor: pointer;
-}
-.btn-qtd-mini:hover { background: #fff; border-color: var(--cor-destaque); }
-
-/* Descrição e Botão Remover */
-.inv-desc-display {
-    margin-top: 6px;
-    font-size: 0.85rem;
-    color: #444;
-    white-space: pre-wrap; /* Permite quebra de linha com Enter */
-    padding-left: 5px;
-    border-left: 2px solid rgba(0,0,0,0.1);
-}
-.inv-footer { display: flex; justify-content: flex-end; margin-top: 4px; }
-.btn-remover-mini {
-    font-size: 0.65rem;
-    color: var(--cor-perigo);
-    background: transparent;
-    border: 1px solid transparent;
-    padding: 2px 5px;
-}
-.btn-remover-mini:hover { text-decoration: underline; }
-
-/* SELEÇÃO (MODAL) - Imagens Pequenas */
-.item-selecao-row { 
-    display: flex; align-items: center; 
-    padding: 6px 10px; /* Mais compacto */
-    background: rgba(255,255,255,0.5); 
-    border-bottom: 1px solid #d4c5a3; 
-    cursor: pointer; transition: background 0.2s; 
-}
-.item-selecao-row:hover { background: rgba(184, 134, 11, 0.3); border-left: 4px solid var(--cor-destaque); }
-.item-selecao-img { 
-    width: 30px; /* BEM MENOR */
-    height: 30px; 
-    margin-right: 10px; 
-    object-fit: cover; 
-    border: 1px solid #555; 
-    border-radius: 2px; 
-}
-
-/* MODAL */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
-.modal-content { background: var(--cor-papel); padding: 25px; border-radius: 8px; border: 3px double var(--cor-borda-forte); width: 90%; max-width: 450px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
-.modal-buttons { display: flex; justify-content: space-around; margin-top: 20px; }
-
-@media (max-width: 700px) {
-    .header-split-container { flex-direction: column; align-items: center; text-align: center; }
-    .split-columns { flex-direction: column; }
-    .recurso-box-container { grid-template-columns: 1fr; }
-    .paper-doll-container { flex-direction: column; align-items: center; padding: 10px; }
-    .doll-column { flex-direction: row; width: 100%; justify-content: center; flex-wrap: wrap; gap: 10px; order: 2; height: auto; }
-    .doll-center { order: 1; margin-bottom: 20px; }
-    .consumiveis-row { order: 3; }
-    .battle-grid { grid-template-columns: 1fr 1fr; }
-}
-
-/* Wrapper para posicionamento relativo */
-.slot-wrapper-relative {
-    position: relative;
-    display: inline-block;
-}
-
-/* Botão X (Agora na Esquerda) */
+/* BOTÃO X (ESQUERDA) */
+.slot-wrapper-relative { position: relative; display: inline-block; }
 .btn-fechar-slot {
     position: absolute;
     top: -8px;
-    left: -8px; /* MUDADO PARA A ESQUERDA */
+    left: -8px; /* Esquerda */
     background: var(--cor-perigo);
     color: white;
     border: 1px solid #fff;
@@ -427,144 +278,137 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
     z-index: 10;
     box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
+.btn-fechar-slot:hover { background: red; transform: scale(1.1); }
 
-.btn-fechar-slot:hover {
-    background: red;
-    transform: scale(1.1);
-}
-/* --- ABAS DESLIZANTES (CARROSSEL) --- */
-.tabs-principal {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap !important; /* Força linha única */
-    overflow-x: auto;          /* Permite rolar para o lado */
-    -webkit-overflow-scrolling: touch; 
-    gap: 8px;
-    padding-bottom: 5px;
-    scrollbar-width: none; /* Firefox */
-    width: 100%;
-}
-.tabs-principal::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+/* BATALHA STATS */
+.battle-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.battle-group { background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid rgba(0,0,0,0.1); }
+.battle-group label { display: block; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; color: var(--cor-borda-forte); margin-bottom: 2px; }
+.batalha-input { width: 100%; background: transparent; border: none; text-align: center; font-weight: bold; font-size: 1.2rem; font-family: 'Cinzel', serif; color: var(--cor-titulo); }
 
-.tab-principal-btn {
-    flex: 0 0 auto; /* Não encolhe */
-    white-space: nowrap;
-}
+/* SKILLS */
+.skill-tabs, .sub-tab-btn { margin-bottom: 15px; }
+.skill-tab-btn { padding: 6px 12px; border: 1px solid var(--cor-borda-sutil); background: #dcd0c0; border-radius: 3px; font-size: 0.85rem; font-weight: bold; }
+.skill-tab-btn.active, .sub-tab-btn.active { background: var(--cor-destaque); color: #fff; border-color: #8b6508; text-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
+.skill-item { background: rgba(244, 240, 230, 0.6); border: 1px solid var(--cor-borda-sutil); padding: 8px; margin-bottom: 8px; border-radius: 4px; box-shadow: 1px 1px 3px rgba(0,0,0,0.1); position: relative; transition: all 0.2s; }
+.skill-header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.skill-nome-container { display: flex; align-items: center; flex-grow: 1; }
+.skill-nome { font-weight: bold; border: none; width: 100%; background: transparent; font-size: 1rem; font-family: 'Cinzel', serif; color: #2e2315; }
+.skill-header-info { display: flex; align-items: center; gap: 12px; }
+.header-rarity-display { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+.header-cost-box { display: flex; flex-direction: column; align-items: flex-end; line-height: 0.9; border-left: 1px solid #ccc; padding-left: 8px; }
+.header-cost-val { font-family: 'Cinzel', serif; }
+.remover-skill-btn { color: #999; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; margin-left: 5px; }
+.toggle-skill-btn { background: none; border: none; font-size: 0.8rem; color: var(--cor-borda-forte); margin-right: 5px; cursor: pointer; }
+.skill-item.collapsed .skill-main-content, .skill-item.collapsed .skill-modificadores-container { display: none; }
+.skill-item.collapsed .toggle-skill-btn { transform: rotate(-90deg); }
+.skill-main-content { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.2); }
+.skill-controls-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+.skill-cost-detail { display: flex; align-items: center; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+.skill-input-num { width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; font-size: 1rem; color: var(--cor-destaque); }
+.skill-descricao { width: 100%; min-height: 50px; font-size: 0.9rem; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background: rgba(255,255,255,0.4); font-style: italic; }
+.skill-modificadores-container { margin-top: 10px; background: rgba(255,255,255,0.3); padding: 5px; border-radius: 4px; }
+.modifier-entry { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.7); border: 1px solid #ddd; padding: 4px; margin-bottom: 4px; border-radius: 3px; flex-wrap: wrap; }
+.skill-select { padding: 2px; border: 1px solid #ccc; font-size: 0.8rem; max-width: 130px; }
+.skill-mod-group { display: flex; align-items: center; font-size: 0.8rem; }
+.remover-modificador-btn { background: var(--cor-perigo); color: white; border: none; width: 20px; height: 20px; border-radius: 50%; font-size: 0.7rem; margin-left: auto; }
+
+/* INVENTÁRIO */
+.inv-tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+.inv-tab-btn { padding: 6px 12px; background: var(--cor-borda-sutil); border: none; border-radius: 4px; font-size: 0.85rem; font-weight: bold; color: #2e2315; }
+.inv-tab-btn.active { background: var(--cor-titulo); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+.inv-item { background: linear-gradient(to right, #fdfbf7, #f4f0e6); border: 1px solid var(--cor-borda-sutil); margin-bottom: 8px; padding: 8px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
+.inv-main-row { display: flex; align-items: flex-start; gap: 12px; padding-right: 60px; }
+.inv-img-wrapper { position: relative; width: 45px; height: 45px; flex-shrink: 0; border: 1px solid var(--cor-borda-forte); border-radius: 3px; background: #ddd; cursor: pointer; }
+.inv-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+.inv-img-upload-icon { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); color: white; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; opacity: 0; transition: opacity 0.2s; }
+.inv-img-wrapper:hover .inv-img-upload-icon { opacity: 1; }
+.inv-info-col { display: flex; flex-direction: column; min-width: 0; }
+.inv-nome-linha { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--cor-texto-principal); font-weight: bold; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.inv-raridade-text { font-size: 0.75rem; font-family: 'Crimson Text', serif; text-transform: uppercase; color: #666; font-weight: normal; }
+.inv-stats-text { font-size: 0.75rem; color: #555; margin-top: 2px; }
+.inv-contador-absolute { position: absolute; top: 5px; right: 5px; display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.6); padding: 2px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+.inv-qtd-display { font-size: 0.8rem; font-weight: bold; min-width: 20px; text-align: center; color: var(--cor-titulo); }
+.btn-qtd-mini { padding: 0px 6px; font-size: 0.8rem; height: 20px; line-height: 18px; border: 1px solid #aaa; background: #e0d0b0; border-radius: 3px; cursor: pointer; }
+.inv-desc-display { margin-top: 6px; font-size: 0.85rem; color: #444; white-space: pre-wrap; padding-left: 5px; border-left: 2px solid rgba(0,0,0,0.1); }
+.inv-footer { display: flex; justify-content: flex-end; margin-top: 4px; }
+.btn-remover-mini { font-size: 0.65rem; color: var(--cor-perigo); background: transparent; border: 1px solid transparent; padding: 2px 5px; }
+
+/* MODAIS */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+.modal-content { background: var(--cor-papel); padding: 25px; border-radius: 8px; border: 3px double var(--cor-borda-forte); width: 90%; max-width: 450px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.8); overflow-y: auto; max-height: 90vh; }
+.item-selecao-row { display: flex; align-items: center; padding: 6px 10px; background: rgba(255,255,255,0.5); border-bottom: 1px solid #d4c5a3; cursor: pointer; transition: background 0.2s; }
+.item-selecao-img { width: 30px; height: 30px; margin-right: 10px; object-fit: cover; border: 1px solid #555; border-radius: 2px; }
+
 /* ==========================================================================
-   MOBILE (CELULAR) - ATUALIZADO
+   MOBILE (CELULAR) - @MEDIA QUERY 
+   (Ajustes para telas pequenas, mantendo classes originais)
    ========================================================================== */
 @media screen and (max-width: 768px) {
 
-    /* --- LAYOUT GERAL --- */
+    /* 1. ESTRUTURA E COLUNAS */
     .container {
-        flex-direction: column;
-        padding: 5px;
-        overflow-x: hidden; /* Evita rolagem lateral da página inteira */
+        padding: 10px;
+        margin-top: 60px; /* Header fica menor no mobile se precisar */
     }
+    .header-split-container { flex-direction: column; align-items: center; text-align: center; }
+    .split-columns { flex-direction: column; gap: 15px; } /* Empilha as colunas principais */
+    .recurso-box-container { grid-template-columns: 1fr; gap: 10px; } /* Barras HP/Mana em uma coluna */
 
-    .col-esq, .col-centro, .col-dir {
-        width: 100%;
-        margin-bottom: 20px;
-        border-right: none;
-        border-bottom: 1px solid #444;
-        padding-bottom: 20px;
-    }
-
-    /* --- CABEÇALHO --- */
-    #nome-personagem-input { font-size: 1.5rem; text-align: center; }
-    .header-details { grid-template-columns: 1fr; gap: 5px; }
-
-    /* --- ATRIBUTOS (ALINHAMENTO PERFEITO) --- */
+    /* 2. ATRIBUTOS (ALINHAMENTO) */
     .atributo-row {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 100% !important;
-        padding: 4px 0 !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding: 5px;
+        flex-wrap: nowrap; /* Garante linha única */
     }
+    .atributo-row label {
+        width: 70px; /* Largura fixa para alinhar nomes */
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+    .atributo-input { font-size: 1.1rem; width: 40px; }
+    .treino-info { gap: 5px; font-size: 0.75rem; }
+    .treinar-btn { padding: 2px 4px; font-size: 0.7rem; }
 
-    /* 1. Nome (Largura Fixa) */
-    .atributo-nome {
-        flex: 0 0 65px !important;
-        width: 65px !important;
-        font-size: 0.85rem !important;
-        text-align: left !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+    /* 3. EQUIPAMENTOS EM GRADE (GRID) */
+    .paper-doll-container {
+        padding: 5px;
+        gap: 10px;
+        justify-content: center;
     }
-
-    /* 2. Centro (Input e Botões +/- Pequenos) */
-    .atributo-input-group {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex: 1 !important;
-    }
-
-    .atributo-input-group button {
-        width: 22px !important;      /* Botão Quadrado Pequeno */
-        height: 22px !important;
-        font-size: 0.8rem !important;
-        padding: 0 !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-    }
-
-    .atributo-input {
-        width: 35px !important;
-        height: 22px !important;
-        font-size: 0.9rem !important;
-        margin: 0 4px !important;
-        text-align: center !important;
-    }
-
-    /* 3. Direita (Treino Alinhado) */
-    .treino-container {
-        flex: 0 0 50px !important; /* Coluna fixa para alinhar os números */
-        width: 50px !important;
-        display: flex !important;
-        justify-content: flex-end !important; /* Alinha à direita */
-    }
-    
-    .treino-contador { font-size: 0.8rem !important; }
-    
-    .treinar-btn {
-        height: 22px !important;
-        line-height: 22px !important;
-        padding: 0 5px !important;
-        font-size: 0.7rem !important;
-    }
-
-    /* --- SLOTS EM GRADE (GRID) --- */
-    .equip-grid, #consumiveis-grid {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
+    /* Força os slots a se comportarem como grade */
+    .doll-column, .doll-column-left {
+        flex-direction: row; /* Lado a lado */
+        flex-wrap: wrap;     /* Quebra linha */
+        width: 100%;         /* Ocupa largura total */
+        height: auto;        /* Altura automática */
+        justify-content: center;
         gap: 8px;
     }
+    .doll-center { margin: 10px 0; }
+    .char-portrait-vertical { height: 300px; width: 100%; max-width: 200px; } /* Reduz imagem no celular */
 
     .equip-slot {
-        width: 55px !important;   /* Levemente menor para caber mais */
-        height: 55px !important;
-        flex: 0 0 auto !important;
-        margin: 0 !important;
+        width: 50px; height: 50px; /* Slot menor */
+        flex-shrink: 0; /* Não esmaga */
     }
-    
-    .consumivel-compacto {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        margin: 0 !important;
-        width: auto !important;
-    }
+    .slot-placeholder { font-size: 1.2rem; }
 
-    /* --- MODAIS E OUTROS --- */
-    .modal-content { width: 95%; margin: 5% auto; max-height: 90vh; }
-    .inv-item { flex-direction: column; align-items: flex-start; }
-    .inv-main-row { width: 100%; display: flex; flex-direction: row; }
+    /* 4. CONSUMÍVEIS */
+    .consumiveis-row, #consumiveis-grid {
+        gap: 5px;
+        justify-content: center;
+        flex-wrap: wrap; /* CRUCIAL: Impede vazar */
+    }
+    .consumivel-compacto {
+        width: auto;
+        padding: 4px;
+        margin-bottom: 5px;
+    }
+    .consumivel-compacto .equip-slot { width: 40px; height: 40px; }
+
+    /* 5. BATALHA E INVENTÁRIO */
+    .battle-grid { grid-template-columns: 1fr 1fr; }
+    .inv-main-row { padding-right: 0; flex-wrap: wrap; } /* Permite quebra se nome for longo */
+    .inv-contador-absolute { position: static; margin-left: auto; background: none; border: none; } /* Reorganiza botões no mobile */
+    .inv-header { flex-direction: column; }
 }
