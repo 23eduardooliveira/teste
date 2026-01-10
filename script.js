@@ -1,5 +1,5 @@
 /* ================================================================================
-   SCRIPT.JS - VERSÃO ATUALIZADA (MODELO NANOBANANA-PRO)
+   SCRIPT.JS - VERSÃO FINAL (LAYOUT INVENTÁRIO + SKILL LAYOUT + MODIFICADORES)
    ================================================================================ */
 
 window.recursosAtuais = null; 
@@ -11,6 +11,14 @@ let currentSkillType = 'A';
 const STORAGE_KEY = 'ficha_rpg_medieval_auto_save';
 let graficoInstance = null;
 
+// --- CONFIGURAÇÃO DE SLOTS ---
+let slotAssignments = {
+    'slot-arma1': '', 'slot-arma2': '', 'slot-armadura': '', 'slot-acessorio': '',
+    'slot-magico1': '', 'slot-magico2': '', 'slot-magico3': '', 'slot-magico4': '', 'slot-magico5': '',
+    'slot-cons1': '', 'slot-cons2': '', 'slot-cons3': ''
+};
+let itemParaUploadImagem = null; 
+
 // --- CORES & LISTAS ---
 const CORES_TEXTO_RARIDADE = { 
     'Comum': '#555555', 'Incomum': '#2e8b57', 'Raro': '#00008b', 
@@ -20,28 +28,19 @@ const CORES_TEXTO_RARIDADE = {
     'Mítico': '#008080', 'Mitico': '#008080' 
 };
 
-const CUSTO_RARIDADE = { 
-    'Comum': 1, 'Incomum': 3, 'Raro': 6, 
-    'Rarissima': 10, 'Raríssima': 10,
-    'Epico': 14, 'Épico': 14,
-    'Lendario': 18, 'Lendário': 18,
-    'Mitico' : 22, 'Mítico' : 22
-};
-
+const CUSTO_RARIDADE = { 'Comum': 1, 'Incomum': 3, 'Raro': 6, 'Épico': 14, 'Lendário': 18, 'Mítico': 22 };
 const CUSTO_BASE_SKILL_ATIVA = { 'Comum': 10, 'Incomum': 15, 'Raro': 20, 'Rarissima': 25, 'Epico': 30, 'Lendario': 35, 'Mitico': 40 };
 
+/* --- LISTA COMPLETA DE MODIFICADORES --- */
 const SKILL_MODIFIERS = {
     'Alcances Básicos': [ { nome: 'Toque', custo: 0 }, { nome: 'Projétil', custo: 0.5 }, { nome: 'Feitiço', custo: 1 }, { nome: 'Raio', custo: 3 }, { nome: 'Cone', custo: 1 } ],
-    'Alcances Avançados': [ { nome: 'Composto', custo: 0 }, { nome: 'Proj. Guiado', custo: 1 }, { nome: 'Zona', custo: 1 }, { nome: 'Rastro', custo: 2 }, { nome: 'Atravessar', custo: 3 }, { nome: 'Ricochete', custo: 2 }, { nome: 'Curva', custo: 3 }, { nome: 'Contágio', custo: 2 }, { nome: 'Salto', custo: 2 } ],
     'Modificadores': [ { nome: 'Ataques Extras', custo: 7 }, { nome: 'Efeito Sustentado', custo: 0 }, { nome: 'Redução de custo', custo: 2 } ],
     'Efeitos Imediatos': [ { nome: 'Dano', custo: 1 }, { nome: 'Crítico Aprimorado', custo: 5 }, { nome: 'Saque Rápido', custo: 2 }, { nome: 'Deslocamento', custo: 3 }, { nome: 'Avançar', custo: 2 }, { nome: 'Investida', custo: 1 }, { nome: 'Teleporte', custo: 3 }, { nome: 'Empurrar', custo: 2 }, { nome: 'Puxar', custo: 2 }, { nome: 'Manobrar', custo: 3 }, { nome: 'Decoy', custo: 1 }, { nome: 'Nexus', custo: 5 }, { nome: 'Terminus', custo: 5 }, { nome: 'Panaceia', custo: 3 }, { nome: 'Ilusão Visual', custo: 1 }, { nome: 'Ilusão Auditiva', custo: 1 }, { nome: 'Ilusão Olfativa', custo: 1 }, { nome: 'Ilusão Tátil', custo: 1 }, { nome: 'Desarmar', custo: 3 }, { nome: 'Derrubar', custo: 3 }, { nome: 'Brutalidade', custo: 5 }, { nome: 'Absorver Marcas', custo: 3 } ],
     'Buff/Debuff': [ { nome: 'Precisão', custo: 1 }, { nome: 'Influência', custo: 1 }, { nome: 'Esquiva', custo: 1 }, { nome: 'Aparo', custo: 1 }, { nome: 'Proteção', custo: 1 }, { nome: 'Defesa', custo: 1 }, { nome: 'Dano (Buff)', custo: 1 }, { nome: 'Duração de Buff/Debuff', custo: 3 }, { nome: 'Raridade de Arma', custo: 5 }, { nome: 'Raridade de Armadura', custo: 5 }, { nome: 'Sobrevida', custo: 0.5 }, { nome: 'Duração', custo: 1 } ],
-    'Status Especiais': [ { nome: 'Marca', custo: 1 }, { nome: 'Provocar', custo: 3 } ],
     'Status Positivos': [ { nome: 'Arma Encantada', custo: 3 }, { nome: 'Aparo Desarmado', custo: 3 }, { nome: 'Aparo Aprimorado', custo: 3 }, { nome: 'Desengajar', custo: 3 }, { nome: 'Esmaecer', custo: 3 }, { nome: 'Regeneração I', custo: 3 }, { nome: 'Liberdade', custo: 3 }, { nome: 'Triagem', custo: 3 }, { nome: 'Força do Gigante', custo: 3 }, { nome: 'Reflexo Felino', custo: 3 }, { nome: 'Olho de Águia', custo: 3 }, { nome: 'Couro de Elefante', custo: 3 }, { nome: 'Aura do Unicórnio', custo: 3 }, { nome: 'Astúcia da Raposa', custo: 3 }, { nome: 'Persuasão Feérica', custo: 3 }, { nome: 'Refletir Dano I', custo: 3 }, { nome: 'Aparo Místico', custo: 5 }, { nome: 'Defletir', custo: 5 }, { nome: 'Contra-ataque', custo: 5 }, { nome: 'Adrenalina', custo: 5 }, { nome: 'Erudição', custo: 5 }, { nome: 'Foco', custo: 5 }, { nome: 'Regeneração II', custo: 5 }, { nome: 'Assepsia', custo: 5 }, { nome: 'Autonomia', custo: 5 }, { nome: 'Solidez', custo: 5 }, { nome: 'Refletir Dano II', custo: 5 }, { nome: 'Invisibilidade', custo: 7 }, { nome: 'Regeneração III', custo: 7 }, { nome: 'Prevenção', custo: 7 }, { nome: 'Refletir Dano III', custo: 10 } ],
     'Barreiras': [ { nome: 'Barreira Mística: Espaços Ocupados', custo: 1 }, { nome: 'Barreira Mística: Altura da Barreira', custo: 1 }, { nome: 'Barreira Mística: Duração da Barreira', custo: 1 }, { nome: 'Barreira Mística: Proteção Bônus', custo: 1 }, { nome: 'Barreira Cinética: Espaços Ocupados', custo: 1 }, { nome: 'Barreira Cinética: Altura da Barreira', custo: 1 }, { nome: 'Barreira Cinética: Resistência da Barreira', custo: 1 } ],
     'Status Negativos': [ { nome: 'Dano Contínuo I', custo: 3 }, { nome: 'Derreter', custo: 3 }, { nome: 'Congelado', custo: 3 }, { nome: 'Peso', custo: 3 }, { nome: 'Exaustão', custo: 3 }, { nome: 'Mana Burn', custo: 3 }, { nome: 'Desconexão', custo: 3 }, { nome: 'Pasmar', custo: 3 }, { nome: 'Bloqueio Psíquico', custo: 3 }, { nome: 'Imobilização', custo: 3 }, { nome: 'Distração', custo: 3 }, { nome: 'Atraso', custo: 3 }, { nome: 'Sufocamento', custo: 3 }, { nome: 'Inflamação', custo: 3 }, { nome: 'Afugentado', custo: 3 }, { nome: 'Dissociação', custo: 3 }, { nome: 'Confusão', custo: 3 }, { nome: 'Vertigem', custo: 3 }, { nome: 'Dano Contínuo II', custo: 5 }, { nome: 'Lentidão', custo: 5 }, { nome: 'Estupidez', custo: 5 }, { nome: 'Ruído', custo: 5 }, { nome: 'Expurgo', custo: 5 }, { nome: 'Selo Físico', custo: 5 }, { nome: 'Selo Mágico', custo: 5 }, { nome: 'Selo Psíquico', custo: 5 }, { nome: 'Sugestão', custo: 5 }, { nome: 'Charm', custo: 5 }, { nome: 'Infecção', custo: 5 }, { nome: 'Medo', custo: 5 }, { nome: 'Cegueira', custo: 5 }, { nome: 'Berserk', custo: 5 }, { nome: 'Quebra Estância', custo: 5 }, { nome: 'Quebra Encanto', custo: 5 }, { nome: 'Quebra Influência', custo: 5 }, { nome: 'Quebra de Armadura', custo: 5 }, { nome: 'Quebra Arcana', custo: 5 }, { nome: 'Quebra Psíquica', custo: 5 }, { nome: 'Dano Contínuo III', custo: 7 }, { nome: 'Atordoamento', custo: 7 }, { nome: 'Comando', custo: 7 }, { nome: 'Decadência', custo: 7 }, { nome: 'Terror', custo: 7 }, { nome: 'Controle', custo: 10 } ],
     'Invocações': [ { nome: 'Invocar ilusões', custo: 1 }, { nome: 'Invocar Simulacros', custo: 10 }, { nome: 'Invocar Criatura', custo: 10 } ],
-    'Transformações': [ { nome: 'Duração', custo: 1 }, { nome: 'Ficha da Transformação', custo: 5 }, { nome: 'Ascensões', custo: 5 } ],
     'Habilidades Passivas (Base)': [ { nome: 'Precisão', custo: 1 }, { nome: 'Influência', custo: 1 }, { nome: 'Esquiva', custo: 1 }, { nome: 'Aparo', custo: 1 }, { nome: 'Proteção', custo: 1 }, { nome: 'Defesa', custo: 1 }, { nome: 'Dano', custo: 1 }, { nome: 'Recuperação de Stamina', custo: 2 }, { nome: 'Recuperação de Mana', custo: 2 }, { nome: 'Recuperação de Psy', custo: 2 }, { nome: 'Passiva Reativa', custo: 3 }, { nome: 'Resistir Magia', custo: 1 }, { nome: 'Defesa Mágica', custo: 1 } ]
 };
 
@@ -134,14 +133,11 @@ function atualizarSistemaCompleto() {
 function calcularRecursos() { 
     const F = getAttrValue("Forca"); const R = getAttrValue("Resistencia"); const E = getAttrValue("Espírito"); const I = getAttrValue("Inteligencia"); const C = getAttrValue("Carisma"); 
     const maxHP = R * 4; const maxST = R * 2 + F; const maxMP = E * 2 + I; const maxPSI = I * 2 + C;
-
     if (!window.recursosAtuais) { window.recursosAtuais = { hp: maxHP, st: maxST, mp: maxMP, psi: maxPSI }; }
-
     document.getElementById('hp-max').innerText = maxHP; document.getElementById('st-max').innerText = maxST; 
     document.getElementById('mp-max').innerText = maxMP; document.getElementById('psi-max').innerText = maxPSI; 
     atualizarBarrasVisuais(maxHP, maxST, maxMP, maxPSI);
 }
-
 function atualizarBarrasVisuais(maxHP, maxST, maxMP, maxPSI) {
     if (!window.recursosAtuais) return;
     let curHP = window.recursosAtuais.hp; let curST = window.recursosAtuais.st; let curMP = window.recursosAtuais.mp; let curPSI = window.recursosAtuais.psi;
@@ -151,7 +147,6 @@ function atualizarBarrasVisuais(maxHP, maxST, maxMP, maxPSI) {
     document.getElementById('mp-bar-fill').style.width = Math.min(100, Math.max(0, (curMP / maxMP) * 100)) + '%';
     document.getElementById('psi-bar-fill').style.width = Math.min(100, Math.max(0, (curPSI / maxPSI) * 100)) + '%';
 }
-
 function alterarRecurso(tipo, multiplicador) {
     const inputId = `mod-${tipo}`; const inputVal = document.getElementById(inputId).value; const valorDigitado = parseInt(inputVal) || 0; 
     if (valorDigitado === 0) return;
@@ -165,7 +160,6 @@ function calcularCustoPericia(elemento) { const item = elemento.closest('.perici
 function calcularPericias() { const nivel = window.regra.nivelAtual || 0.01; const ptsBase = Math.floor(nivel * 10); const ptsPrincipal = ptsBase; const ptsSecundaria = Math.max(0, ptsBase - 5); const ptsTerciaria = Math.max(0, ptsBase - 10); document.getElementById('pericia-principal-pts').innerText = ptsPrincipal; document.getElementById('pericia-secundaria-pts').innerText = ptsSecundaria; document.getElementById('pericia-terciaria-pts').innerText = ptsTerciaria; atualizarDisplayGastos('principal', somarGastosPericia('principal'), ptsPrincipal); atualizarDisplayGastos('secundaria', somarGastosPericia('secundaria'), ptsSecundaria); atualizarDisplayGastos('terciaria', somarGastosPericia('terciaria'), ptsTerciaria); }
 function somarGastosPericia(cat) { const container = document.getElementById(`pericias-${cat}`); let total = 0; if (container) container.querySelectorAll('.pericia-item').forEach(item => total += parseInt(item.dataset.custo) || 0); return total; }
 function atualizarDisplayGastos(cat, gastos, limite) { const display = document.getElementById(`pericia-${cat}-gastos`); if (display) { display.innerText = gastos; display.style.color = (gastos > limite) ? 'var(--cor-perigo)' : 'var(--cor-sucesso)'; } }
-
 function criarPericiaElement(categoria, dados) { 
     const item = document.createElement('div'); item.className = 'pericia-item'; item.dataset.categoria = categoria; item.dataset.custo = dados.custo || CUSTO_RARIDADE[dados.raridade] || 1; const raridade = dados.raridade || 'Comum'; const raridadeOptions = Object.keys(CUSTO_RARIDADE).map(r => `<option value="${r}" ${r === raridade ? 'selected' : ''}>${r}</option>`).join(''); 
     item.innerHTML = ` <input type="text" class="pericia-nome" value="${dados.nome || 'Nova Perícia'}" placeholder="Nome"> <select class="pericia-raridade" onchange="calcularCustoPericia(this)">${raridadeOptions}</select> <button onclick="removerPericia(this)" class="remover-pericia-btn">X</button> `; 
@@ -185,70 +179,81 @@ function organizarSkillsVisualmente() {
     const displayCounter = document.getElementById('skill-rarity-counters');
     
     let raridadeCount = {};
-    
     todasSkills.forEach(item => { 
         const recurso = item.dataset.recurso; 
         const tipo = item.dataset.tipo; 
         const raridade = item.dataset.raridade || 'Comum'; 
-        
         if (recurso === currentSkillTab) {
             if (!raridadeCount[raridade]) raridadeCount[raridade] = 0;
             raridadeCount[raridade]++;
         }
-
         const pertenceAba = (recurso === currentSkillTab); 
         const pertenceTipo = (tipo === currentSkillType); 
-        
-        if (pertenceAba && pertenceTipo) { 
-            containerVisualizacao.appendChild(item); 
-        } else { 
-            containerStorage.appendChild(item); 
-        } 
+        if (pertenceAba && pertenceTipo) containerVisualizacao.appendChild(item); 
+        else containerStorage.appendChild(item); 
     });
-
     displayCounter.innerHTML = '';
     const raridadesEncontradas = Object.keys(raridadeCount);
-    if(raridadesEncontradas.length === 0) {
-        displayCounter.innerHTML = '<span style="color:#666;">Nenhuma habilidade neste recurso.</span>';
-    } else {
-        raridadesEncontradas.forEach(rar => {
-            const count = raridadeCount[rar];
-            const color = CORES_TEXTO_RARIDADE[rar] || '#333';
-            displayCounter.innerHTML += `<span class="rarity-tag" style="background-color:${color}; border:1px solid rgba(0,0,0,0.2);">${rar}: ${count}</span>`;
-        });
-    }
+    if(raridadesEncontradas.length === 0) displayCounter.innerHTML = '<span style="color:#666;">Nenhuma habilidade neste recurso.</span>';
+    else raridadesEncontradas.forEach(rar => { displayCounter.innerHTML += `<span class="rarity-tag" style="background-color:${CORES_TEXTO_RARIDADE[rar]}; color:#fff; padding:2px 5px; border-radius:3px; margin-right:5px;">${rar}: ${raridadeCount[rar]}</span>`; });
 }
 
-function toggleSkill(btn) { const item = btn.closest('.skill-item'); item.classList.toggle('collapsed'); }
+function toggleSkill(btn) { 
+    const item = btn.closest('.skill-item'); 
+    item.classList.toggle('collapsed'); 
+}
 
+/* --- CRIAÇÃO DE SKILL --- */
 function criarSkillElement(dados) { 
-    const item = document.createElement('div'); item.className = 'skill-item'; 
+    const item = document.createElement('div'); item.className = 'skill-item collapsed'; 
     const raridade = dados.raridade || 'Comum'; const tipo = dados.tipo || currentSkillType; const custoRecurso = dados.custoRecurso || currentSkillTab; 
     item.dataset.recurso = custoRecurso; item.dataset.tipo = tipo; item.dataset.custo = dados.custo || 0; item.dataset.raridade = raridade; 
     const raridadeOptions = Object.keys(CUSTO_BASE_SKILL_ATIVA).map(r => `<option value="${r}" ${r === raridade ? 'selected' : ''}>${r}</option>`).join('');
 
     item.innerHTML = ` 
         <div class="skill-header-row"> 
-            <button class="toggle-skill-btn" onclick="toggleSkill(this)">▼</button>
-            <input type="text" class="skill-nome skill-input-text" value="${dados.nome || 'Nova Skill'}" placeholder="Nome" data-tippy-content="${dados.descricao || 'Sem descrição'}" oninput="this.dataset.tippyContent = this.closest('.skill-item').querySelector('.skill-descricao').value; handleSkillChange(this)"> 
+            <div style="display:flex; align-items:center; flex-grow:1;">
+                <button class="toggle-skill-btn" onclick="toggleSkill(this)">▼</button>
+                <input type="text" class="skill-nome skill-input-text" value="${dados.nome || 'Nova Skill'}" placeholder="Nome" data-tippy-content="${dados.descricao || 'Sem descrição'}" oninput="this.dataset.tippyContent = this.closest('.skill-item').querySelector('.skill-descricao').value; handleSkillChange(this)"> 
+            </div>
+            
             <div class="skill-header-info">
-                <span class="header-rarity-display">${raridade}</span>
-                <div class="header-cost-display">Custo: <span class="header-cost-val">0.0</span></div>
+                <span class="header-rarity-display" style="color:${CORES_TEXTO_RARIDADE[raridade]}">${raridade}</span>
+                <div class="header-cost-box">
+                    <span style="font-size:0.7rem; color:#666;">Custo:</span>
+                    <span class="header-cost-val" style="font-weight:bold; font-size:1.1rem;">0.0</span>
+                </div>
+                <button onclick="removerSkill(this)" class="remover-skill-btn">✕</button> 
             </div>
-            <button onclick="removerSkill(this)" class="remover-skill-btn">✕</button> 
         </div> 
+
         <div class="skill-main-content">
-            <textarea class="skill-descricao" placeholder="Descrição da habilidade..." oninput="handleSkillChange(this)">${dados.descricao || ''}</textarea>
-            <div class="skill-stats-column">
-                <select class="skill-raridade-select" onchange="handleSkillChange(this)">${raridadeOptions}</select>
-                <div class="skill-costs-row"><div class="mini-cost-box"><label>Custo</label><input type="number" class="skill-custo-input skill-input-num" value="${parseFloat(item.dataset.custo).toFixed(1)}" min="0" readonly></div><div class="mini-cost-box"><label>Max</label><span class="skill-limite-display">0.0</span></div></div><span class="skill-gasto-display" style="display:none;">0.0</span>
+            <div class="skill-controls-row">
+                 <div style="flex:1; margin-right:10px;">
+                    <label>Raridade Base:</label>
+                    <select class="skill-raridade-select" onchange="handleSkillChange(this)" style="width:100%;">${raridadeOptions}</select>
+                 </div>
+                 <div class="skill-cost-detail">
+                    <label>Limite:</label> <span class="skill-limite-display">0.0</span>
+                    <span style="margin:0 5px;">|</span>
+                    <label>Total:</label> <input type="number" class="skill-custo-input skill-input-num" value="${parseFloat(item.dataset.custo).toFixed(1)}" min="0" readonly>
+                 </div>
+                 <span class="skill-gasto-display" style="display:none;">0.0</span>
             </div>
+
+            <textarea class="skill-descricao" placeholder="Descrição da habilidade..." oninput="handleSkillChange(this)">${dados.descricao || ''}</textarea>
         </div>
-        <div class="skill-modificadores-container"><label>Modificadores:</label><div class="modifier-list"></div><button onclick="adicionarModificador(this)" class="adicionar-mod-btn">+ Efeito</button></div> 
+        
+        <div class="skill-modificadores-container">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <label style="font-weight:bold; font-size:0.8rem;">Modificadores:</label>
+                <button onclick="adicionarModificador(this)" class="adicionar-mod-btn">+ Efeito</button>
+            </div>
+            <div class="modifier-list"></div>
+        </div> 
     `;
     const modListContainer = item.querySelector('.modifier-list'); 
     if (dados.modificadores) { dados.modificadores.forEach(modData => { modListContainer.appendChild(criarModificadorEntryHTML({ key: modData.categoria, nome: modData.nome, rep: modData.rep })); }); }
-    
     tippy(item.querySelector('.skill-nome'), { theme: 'translucent', animation: 'scale', placement: 'top' }); 
     setTimeout(() => { calcularCustoSkill(item); calcularSkills(); }, 0); return item;
 }
@@ -261,7 +266,7 @@ function criarModificadorEntryHTML(modEntryData = {}) {
     const entry = document.createElement('div'); entry.className = 'modifier-entry'; 
     entry.dataset.category = modKey; entry.dataset.modName = modNome; entry.dataset.repetitions = rep; entry.dataset.baseCost = baseCost; 
     
-    entry.innerHTML = ` <select class="skill-select mod-category-select" onchange="handleModifierCategoryChange(this)">${categoryOptions}</select> <select class="skill-select mod-name-select" onchange="handleModifierChange(this)">${effectOptions}</select> <div class="skill-mod-group"><label>x</label><input type="number" class="skill-input-num mod-repetitions-input" value="${rep}" min="1" oninput="handleModifierChange(this)"></div> <div class="skill-mod-group" style="min-width: 60px;"><label>UPs:</label><span class="skill-input-num mod-total-cost" style="text-align:right;">${(baseCost * rep).toFixed(1)}</span></div> <button onclick="removerModificador(this)" class="remover-modificador-btn">X</button> `; 
+    entry.innerHTML = ` <select class="skill-select mod-category-select" onchange="handleModifierCategoryChange(this)">${categoryOptions}</select> <select class="skill-select mod-name-select" onchange="handleModifierChange(this)">${effectOptions}</select> <div class="skill-mod-group"><label>x</label><input type="number" class="skill-input-num mod-repetitions-input" value="${rep}" min="1" oninput="handleModifierChange(this)"></div> <div class="skill-mod-group" style="min-width: 50px;"><label>UPs:</label><span class="skill-input-num mod-total-cost" style="text-align:right;">${(baseCost * rep).toFixed(1)}</span></div> <button onclick="removerModificador(this)" class="remover-modificador-btn">X</button> `; 
     return entry;
 }
 function handleModifierCategoryChange(select) { const entry = select.closest('.modifier-entry'); const category = select.value; const nameSelect = entry.querySelector('.mod-name-select'); const effects = getEffectsForCategory(category); nameSelect.innerHTML = effects.map(mod => `<option value="${mod.nome}">${mod.nome} (${mod.custo})</option>`).join(''); handleModifierChange(nameSelect); }
@@ -280,36 +285,50 @@ function handleSkillChange(el) {
     if (el.classList.contains('skill-raridade-select')) { item.dataset.raridade = el.value; organizarSkillsVisualmente(); calcularCustoSkill(item); } 
     calcularSkills(); salvarAutomaticamente(); 
 }
+
 function calcularCustoSkill(item) { 
     const raridade = item.querySelector('.skill-raridade-select').value; const tipo = item.dataset.tipo; 
     let upsOcupados = 0; let upsReais = 0; let bonusLimiteNerfs = 0; 
     item.querySelectorAll('.modifier-entry').forEach(e => { const cat = e.dataset.category; const nome = e.dataset.modName; const baseCost = parseFloat(e.dataset.baseCost) || 0; const reps = parseInt(e.dataset.repetitions) || 1; const totalCostMod = baseCost * reps; if (cat === 'Efeitos Adversos (Nerfs)') { bonusLimiteNerfs += totalCostMod; } else { if (nome === 'Redução de custo') { upsOcupados += (2 * reps); upsReais -= (1 * reps); } else { upsOcupados += totalCostMod; upsReais += totalCostMod; } } }); 
     const base = CUSTO_BASE_SKILL_ATIVA[raridade] || 0; const limit = (tipo === 'P' ? Math.ceil(base / 2) : base) + bonusLimiteNerfs; let finalCost = Math.max(0, upsReais); 
+    
     item.dataset.custo = finalCost.toFixed(1); 
-    const dispLimit = item.querySelector('.skill-limite-display'); if(dispLimit) dispLimit.innerText = limit.toFixed(1); 
-    const inputCusto = item.querySelector('.skill-custo-input'); inputCusto.value = finalCost.toFixed(1); 
-    item.querySelector('.skill-gasto-display').innerText = finalCost.toFixed(1); 
-    inputCusto.style.color = (upsOcupados > limit) ? 'red' : 'inherit'; item.querySelector('.skill-gasto-display').style.color = (upsOcupados > limit) ? 'red' : 'var(--cor-sucesso)'; 
-    const headerRarity = item.querySelector('.header-rarity-display'); const headerCostVal = item.querySelector('.header-cost-val');
-    if (headerRarity) { headerRarity.innerText = raridade; headerRarity.style.color = CORES_TEXTO_RARIDADE[raridade] || '#333'; }
-    if (headerCostVal) { headerCostVal.innerText = finalCost.toFixed(1); }
+    
+    // Atualiza Displays
+    const dispLimit = item.querySelector('.skill-limite-display'); 
+    if(dispLimit) dispLimit.innerText = limit.toFixed(1); 
+    const inputCusto = item.querySelector('.skill-custo-input'); 
+    if(inputCusto) {
+        inputCusto.value = finalCost.toFixed(1); 
+        inputCusto.style.color = (upsOcupados > limit) ? 'red' : 'inherit';
+    }
+
+    const headerRarity = item.querySelector('.header-rarity-display'); 
+    const headerCostVal = item.querySelector('.header-cost-val');
+    
+    if (headerRarity) { 
+        headerRarity.innerText = raridade; 
+        headerRarity.style.color = CORES_TEXTO_RARIDADE[raridade] || '#333'; 
+    }
+    if (headerCostVal) { 
+        headerCostVal.innerText = finalCost.toFixed(1);
+        headerCostVal.style.color = (upsOcupados > limit) ? 'red' : '#2e8b57';
+    }
 }
 
 function adicionarSkill() { const container = document.getElementById('container-visualizacao'); const novaSkill = criarSkillElement({ custoRecurso: currentSkillTab, tipo: currentSkillType }); container.appendChild(novaSkill); adicionarModificador(novaSkill.querySelector('.adicionar-mod-btn')); salvarAutomaticamente(); }
 function removerSkill(btn) { btn.closest('.skill-item').remove(); calcularSkills(); organizarSkillsVisualmente(); salvarAutomaticamente(); } 
 function calcularSkills() { let total = 0; document.querySelectorAll('.skill-item').forEach(i => total += parseFloat(i.dataset.custo) || 0); }
 
-// --- OUTROS (CROPPER, INV, DADOS) ---
+// --- OUTROS ---
 let currentInvTab = 'equipado'; 
-
 let cropperInstance = null;
 function carregarImagemPersonagem(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { const modal = document.getElementById('cropper-modal'); const imageElement = document.getElementById('image-to-crop'); imageElement.src = e.target.result; modal.style.display = 'flex'; if (cropperInstance) cropperInstance.destroy(); cropperInstance = new Cropper(imageElement, { aspectRatio: 1, viewMode: 1, autoCropArea: 1, dragMode: 'move', guides: false, center: true, highlight: false, background: false }); }; reader.readAsDataURL(file); } }
 function confirmarRecorte() { if (cropperInstance) { const canvas = cropperInstance.getCroppedCanvas({ width: 300, height: 300 }); document.getElementById('char-image-display').src = canvas.toDataURL(); cancelarRecorte(); salvarAutomaticamente(); } }
 function cancelarRecorte() { const modal = document.getElementById('cropper-modal'); modal.style.display = 'none'; if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; } document.getElementById('char-image-upload').value = ''; }
 
-// --- LÓGICA DO INVENTÁRIO (COM MODAL E IMAGENS) ---
-
-let tempItemImage = null; // Variável temporária para imagem no modal
+// --- LÓGICA DO INVENTÁRIO (ATUALIZADA) ---
+let tempItemImage = null;
 
 function mudarAbaInventario(aba) {
     currentInvTab = aba;
@@ -317,11 +336,12 @@ function mudarAbaInventario(aba) {
         if (btn.id === `tab-inv-${aba}`) btn.classList.add('active');
         else btn.classList.remove('active');
     });
-
     const itens = document.querySelectorAll('.inv-item');
     itens.forEach(item => {
         const categoriaItem = item.dataset.categoria;
-        const isEquipado = item.querySelector('.inv-equip-check').checked;
+        let isEquipado = false;
+        const nome = item.dataset.nome;
+        if(nome) { isEquipado = Object.values(slotAssignments).includes(nome); }
         if (aba === 'equipado') { item.style.display = isEquipado ? 'block' : 'none'; } 
         else { item.style.display = (categoriaItem === aba) ? 'block' : 'none'; }
     });
@@ -331,13 +351,14 @@ function abrirModalItem() {
     document.getElementById('modal-inv-nome').value = '';
     document.getElementById('modal-inv-qtd').value = 1;
     document.getElementById('modal-inv-desc').value = '';
-    document.getElementById('modal-inv-categoria').value = 'arma'; // Padrão
-    // Reset da imagem
+    if(document.getElementById('modal-img-prompt')) document.getElementById('modal-img-prompt').value = '';
+    document.getElementById('modal-inv-categoria').value = 'arma';
     document.getElementById('modal-img-preview').src = '';
     document.getElementById('modal-img-preview-box').style.display = 'none';
     document.getElementById('modal-img-upload').value = '';
     tempItemImage = null;
-    
+    const aviso = document.getElementById('aviso-link');
+    if(aviso) aviso.remove();
     handleModalCategoryChange();
     document.getElementById('item-modal').style.display = 'flex';
 }
@@ -346,33 +367,38 @@ function handleModalCategoryChange() {
     const categoria = document.getElementById('modal-inv-categoria').value;
     const container = document.getElementById('modal-inv-extra-container');
     let html = '';
-    if (categoria === 'arma') html = `<label>Dano:</label><input type="text" id="modal-inv-dano" placeholder="Ex: 1d8" style="width:100%;">`;
+    if (categoria === 'arma') {
+        html = `
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div style="flex:1;"><label>Dano:</label><input type="text" id="modal-inv-dano" placeholder="Ex: 1d8" style="width:100%;"></div>
+                <div style="display:flex; align-items:center; gap:5px; margin-top:15px;">
+                    <input type="checkbox" id="modal-inv-duas-maos">
+                    <label for="modal-inv-duas-maos" style="margin:0; cursor:pointer; font-size:0.8rem;">Duas Mãos?</label>
+                </div>
+            </div>`;
+    }
     else if (categoria === 'armadura') html = `<label>Defesa:</label><input type="number" id="modal-inv-defesa" placeholder="Ex: 2" style="width:100%;">`;
     else if (categoria === 'consumivel') html = `<span style="font-size:0.8rem;color:#666;">Será criado com contador +/-</span>`;
-    // Acessorio não tem campo extra obrigatório
     container.innerHTML = html;
 }
 
-// Preview da imagem no Modal (Compactação simples)
 function previewItemImage(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Redimensionar para economizar storage (Canvas)
             const img = new Image();
             img.src = e.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                // Limite máximo de 100px para thumbnails de item
                 const MAX_SIZE = 100; 
                 let width = img.width; let height = img.height;
                 if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
                 else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
                 canvas.width = width; canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
-                tempItemImage = canvas.toDataURL('image/jpeg', 0.7); // Salva compactado
+                tempItemImage = canvas.toDataURL('image/jpeg', 0.7); 
                 document.getElementById('modal-img-preview').src = tempItemImage;
                 document.getElementById('modal-img-preview-box').style.display = 'flex';
             }
@@ -387,11 +413,14 @@ function adicionarItemInventario() {
     const nome = document.getElementById('modal-inv-nome').value.trim(); 
     const qtd = parseInt(document.getElementById('modal-inv-qtd').value) || 1; 
     const desc = document.getElementById('modal-inv-desc').value; 
-    
     if (!nome) { alert("Nome é obrigatório!"); return; } 
     
     let extraVal = ''; 
-    if (categoria === 'arma') extraVal = document.getElementById('modal-inv-dano') ? document.getElementById('modal-inv-dano').value : ''; 
+    let isDuasMaos = false;
+    if (categoria === 'arma') {
+        extraVal = document.getElementById('modal-inv-dano') ? document.getElementById('modal-inv-dano').value : ''; 
+        isDuasMaos = document.getElementById('modal-inv-duas-maos') ? document.getElementById('modal-inv-duas-maos').checked : false;
+    }
     else if (categoria === 'armadura') extraVal = document.getElementById('modal-inv-defesa') ? document.getElementById('modal-inv-defesa').value : ''; 
 
     const container = document.getElementById('inventario-container');
@@ -401,15 +430,14 @@ function adicionarItemInventario() {
     if (itemDuplicado) { 
         alterarQtdInventario(itemDuplicado, qtd); 
     } else {
-        criarElementoItem(container, { categoria, raridade, nome, qtd, desc, extra: extraVal, equipado: false, imagem: tempItemImage });
+        criarElementoItem(container, { categoria, raridade, nome, qtd, desc, extra: extraVal, duasMaos: isDuasMaos, imagem: tempItemImage });
         mudarAbaInventario(currentInvTab);
     } 
-    
     document.getElementById('item-modal').style.display = 'none';
     salvarAutomaticamente(); 
-    atualizarSelectsEquipamento(); 
 }
 
+/* --- FUNÇÃO PRINCIPAL DE CRIAÇÃO DO ITEM (LAYOUT NOVO) --- */
 function criarElementoItem(container, dados) { 
     const div = document.createElement('div'); 
     div.className = 'inv-item'; 
@@ -419,53 +447,90 @@ function criarElementoItem(container, dados) {
     div.dataset.qtd = dados.qtd; 
     div.dataset.desc = dados.desc; 
     div.dataset.extra = dados.extra; 
-    div.dataset.imagem = dados.imagem || ''; // Salva a string base64
+    div.dataset.imagem = dados.imagem || ''; 
+    div.dataset.duasmaos = dados.duasMaos;
     
-    const isEquipped = dados.equipado === true || dados.equipado === "true"; 
-    
-    let displayExtra = ''; 
-    if(dados.categoria === 'arma') displayExtra = ` | Dano: ${dados.extra}`; 
-    if(dados.categoria === 'armadura') displayExtra = ` | Defesa: ${dados.extra}`; 
-    
-    const colorRaridade = CORES_TEXTO_RARIDADE[dados.raridade] || '#333'; 
+    let displayStats = ''; 
+    if(dados.categoria === 'arma') displayStats = `Dano: ${dados.extra} ${dados.duasMaos ? '(2 Mãos)' : ''}`; 
+    else if(dados.categoria === 'armadura') displayStats = `Defesa: ${dados.extra}`; 
+    else displayStats = dados.categoria.charAt(0).toUpperCase() + dados.categoria.slice(1);
 
+    const colorRaridade = CORES_TEXTO_RARIDADE[dados.raridade] || '#333'; 
+    
     // HTML da Imagem
     let imgHtml = '';
-    if(dados.imagem) {
-        imgHtml = `<img src="${dados.imagem}" class="inv-item-img">`;
+    if (dados.imagem) {
+        imgHtml = `<img src="${dados.imagem}" class="inv-item-real-img">`;
     } else {
-        imgHtml = `<div class="inv-item-img" style="display:flex;align-items:center;justify-content:center;color:#555;font-size:0.7rem;">S/ IMG</div>`;
+        imgHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#777;">S/ IMG</div>`;
     }
 
     div.innerHTML = ` 
-        <div class="inv-header-row">
-            <div class="inv-header-content">
+        <div class="inv-main-row">
+            
+            <div class="inv-img-wrapper" onclick="this.querySelector('input[type=file]').click()" title="Alterar Imagem">
                 ${imgHtml}
-                <div style="flex-grow:1;"> 
-                    <div style="display:flex; justify-content:space-between;">
-                         <input type="checkbox" class="inv-equip-check" ${isEquipped ? 'checked' : ''} title="Equipar" onchange="salvarAutomaticamente(); mudarAbaInventario(currentInvTab); atualizarSelectsEquipamento();"> 
-                         <div class="inv-contador-group"> 
-                            <button onclick="alterarQtdInventario(this.closest('.inv-item'), -1)" class="mod-btn compact-btn">-</button> 
-                            <span class="inv-qtd-display" style="min-width: 25px; text-align: center; font-weight:bold;">x${dados.qtd}</span> 
-                            <button onclick="alterarQtdInventario(this.closest('.inv-item'), 1)" class="mod-btn compact-btn">+</button> 
-                        </div> 
-                    </div>
-                    <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap; margin-top:2px;"> 
-                        <span class="inv-nome-display" data-tippy-content="${dados.desc || 'Sem descrição'}">${dados.nome}</span> 
-                        <span class="inv-raridade-display" style="background-color:${colorRaridade};">${dados.raridade}</span> 
-                    </div> 
-                    <div class="inv-stats-row">${dados.categoria.toUpperCase()}${displayExtra}</div> 
-                </div> 
+                <div class="inv-img-upload-icon">📷</div>
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadImagemItemInventario(event, this)">
             </div>
-        </div> 
+
+            <div class="inv-info-col">
+                <div class="inv-nome-linha">
+                    ${dados.nome} 
+                    <span style="color:#aaa;">|</span> 
+                    <span class="inv-raridade-text" style="color:${colorRaridade};">${dados.raridade}</span>
+                </div>
+                <div class="inv-stats-text">${displayStats}</div>
+            </div>
+
+            <div class="inv-contador-absolute">
+                <button onclick="alterarQtdInventario(this.closest('.inv-item'), 1)" class="btn-qtd-mini">+</button> 
+                <span class="inv-qtd-display">x${dados.qtd}</span> 
+                <button onclick="alterarQtdInventario(this.closest('.inv-item'), -1)" class="btn-qtd-mini">-</button> 
+            </div>
+
+        </div>
+
         <div class="inv-desc-display">${dados.desc}</div> 
-        <div style="display: flex; justify-content: flex-end; margin-top: 5px;"> 
-            <button onclick="if(confirm('Deletar este item?')) { this.closest('.inv-item').remove(); salvarAutomaticamente(); atualizarSelectsEquipamento(); }" class="mod-btn" style="font-size: 0.7rem; border-color: var(--cor-perigo); color: var(--cor-perigo);">Remover</button> 
+        
+        <div class="inv-footer"> 
+            <button onclick="if(confirm('Deletar este item?')) { this.closest('.inv-item').remove(); salvarAutomaticamente(); }" class="btn-remover-mini">Remover Item</button> 
         </div> 
     `; 
+    
     container.appendChild(div); 
-    if(window.tippy) tippy(div.querySelector('.inv-nome-display'), { theme: 'translucent', animation: 'scale' });
     return div;
+}
+
+function uploadImagemItemInventario(event, inputEl) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const itemDiv = inputEl.closest('.inv-item');
+            const wrapper = inputEl.closest('.inv-img-wrapper');
+            itemDiv.dataset.imagem = e.target.result;
+            const oldImg = wrapper.querySelector('img');
+            const oldDiv = wrapper.querySelector('div:not(.inv-img-upload-icon)');
+            if(oldImg) oldImg.remove();
+            if(oldDiv) oldDiv.remove();
+            const newImg = document.createElement('img');
+            newImg.src = e.target.result;
+            newImg.className = 'inv-item-real-img'; // Para estilo CSS se precisar
+            // Estilo inline para garantir
+            newImg.style.width = '100%'; newImg.style.height = '100%'; newImg.style.objectFit = 'cover';
+            wrapper.insertBefore(newImg, wrapper.firstChild);
+
+            // Atualiza slots equipados
+            for (const [id, nome] of Object.entries(slotAssignments)) {
+                if(nome === itemDiv.dataset.nome) {
+                    renderizarSlot(id, nome);
+                }
+            }
+            salvarAutomaticamente();
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
 function alterarQtdInventario(itemDiv, valor) { 
@@ -473,106 +538,139 @@ function alterarQtdInventario(itemDiv, valor) {
     qtdAtual += valor; 
     if (qtdAtual <= 0) { 
         if(confirm("Quantidade zerada. Remover item?")) { 
+            const nome = itemDiv.dataset.nome;
+            for(let slot in slotAssignments) {
+                if(slotAssignments[slot] === nome) {
+                    slotAssignments[slot] = '';
+                    renderizarSlot(slot, '');
+                }
+            }
             itemDiv.remove(); 
             salvarAutomaticamente(); 
-            atualizarSelectsEquipamento();
             return; 
         } else { qtdAtual = 0; } 
     } 
     itemDiv.dataset.qtd = qtdAtual; 
     itemDiv.querySelector('.inv-qtd-display').innerText = `x${qtdAtual}`; 
+    for(let slot in slotAssignments) {
+        if(slotAssignments[slot] === itemDiv.dataset.nome) {
+            renderizarSlot(slot, itemDiv.dataset.nome);
+        }
+    }
     salvarAutomaticamente(); 
 }
 
-// --- LÓGICA DE EXCLUSÃO NOS SELECTS DE EQUIPAMENTO ---
-function atualizarSelectsEquipamento() {
-    const selects = document.querySelectorAll('.equip-select');
-    const itens = document.querySelectorAll('.inv-item');
-    
-    // 1. Pegar valores selecionados ATUALMENTE para não perder a seleção
-    const selecoesAtuais = {};
-    selects.forEach(sel => selecoesAtuais[sel.dataset.id] = sel.value);
-
-    // 2. Limpar todos os selects (deixando apenas a opção padrão)
-    selects.forEach(sel => {
-        sel.innerHTML = '<option value="">(Nenhum)</option>';
-    });
-
-    // 3. Repopular selects
-    itens.forEach(item => {
-        const nome = item.dataset.nome;
-        const cat = item.dataset.categoria;
-        
-        // Verifica se este item JÁ está selecionado em OUTRO select (que não seja o que estamos preenchendo agora)
-        // Se estiver, não adicionamos como opção, a menos que tenhamos QTD > 1 (mas simplificaremos: nome único, seleção única)
-        
-        selects.forEach(sel => {
-            const selId = sel.dataset.id;
-            const selTipo = sel.dataset.tipo;
-
-            // Filtra por tipo (Arma vai em Arma, Armadura em Armadura...)
-            // Acessório agora pega 'acessorio'
-            const tipoCompativel = (selTipo === cat) || (selTipo === 'arma' && cat === 'arma') || (selTipo === 'acessorio' && cat === 'acessorio');
-            
-            if (tipoCompativel) {
-                // Checa se já está em uso em OUTRO campo
-                let emUsoOutro = false;
-                for (const [key, value] of Object.entries(selecoesAtuais)) {
-                    if (key !== selId && value === nome && value !== "") {
-                        emUsoOutro = true; // Está equipado em outro slot
-                    }
-                }
-
-                if (!emUsoOutro) {
-                    const option = document.createElement('option');
-                    option.value = nome;
-                    option.innerText = nome;
-                    sel.appendChild(option);
-                }
-            }
-        });
-    });
-
-    // 4. Restaurar valor selecionado (se ainda for válido/disponível)
-    selects.forEach(sel => {
-        const valAntigo = selecoesAtuais[sel.dataset.id];
-        // Verifica se a opção ainda existe no select repopulado
-        const optionExists = Array.from(sel.options).some(op => op.value === valAntigo);
-        if (optionExists) {
-            sel.value = valAntigo;
-        } else if (valAntigo !== "") {
-            // Se o item sumiu (foi deletado ou movido), reseta
-            sel.value = "";
-        }
-        
-        // Adiciona listener para Tooltip/Descrição no Hover
-        sel.addEventListener('mouseover', () => atualizarDescricaoEquip(sel));
-        sel.addEventListener('change', () => atualizarDescricaoEquip(sel));
-    });
-    
-    // Atualiza descrição inicial
-    selects.forEach(sel => atualizarDescricaoEquip(sel));
+// --- SLOT SYSTEM (SÓ SELEÇÃO) ---
+function cliqueSlot(tipo, idSlot) {
+    abrirSelecaoSlot(tipo, idSlot);
 }
 
-function atualizarDescricaoEquip(selectElement) {
-    const nomeItem = selectElement.value;
-    const display = document.getElementById('equip-desc-display');
-    
+function abrirSelecaoSlot(tipoFiltro, idSlot) {
+    slotAtualParaSelecao = idSlot;
+    const listaDiv = document.getElementById('lista-selecao-itens');
+    listaDiv.innerHTML = '';
+    const btnDesequipar = document.createElement('div');
+    btnDesequipar.className = 'item-selecao-row';
+    btnDesequipar.innerHTML = `<span>🚫 (Remover Item)</span>`;
+    btnDesequipar.onclick = () => confirmarSelecaoSlot('');
+    listaDiv.appendChild(btnDesequipar);
+    const todosItens = document.querySelectorAll('.inv-item');
+    let encontrou = false;
+    todosItens.forEach(divItem => {
+        const cat = divItem.dataset.categoria;
+        if (cat === tipoFiltro || (tipoFiltro === 'arma' && cat === 'arma') || (tipoFiltro === 'consumivel' && cat === 'consumivel') || (tipoFiltro === 'acessorio' && (cat === 'acessorio' || cat === 'acessorio'))) {
+            const nome = divItem.dataset.nome;
+            const img = divItem.dataset.imagem;
+            const qtd = divItem.dataset.qtd;
+            const row = document.createElement('div');
+            row.className = 'item-selecao-row';
+            let imgTag = img ? `<img src="${img}" class="item-selecao-img">` : `<div class="item-selecao-img" style="background:#ccc;"></div>`;
+            row.innerHTML = `${imgTag} <div><strong>${nome}</strong> <span style="font-size:0.8rem;">(x${qtd})</span></div>`;
+            row.onclick = () => confirmarSelecaoSlot(nome);
+            listaDiv.appendChild(row);
+            encontrou = true;
+        }
+    });
+    if (!encontrou) { listaDiv.innerHTML += `<div style="padding:10px; text-align:center;">Nenhum item disponível.</div>`; }
+    document.getElementById('modal-selecao-equip').style.display = 'flex';
+}
+
+function confirmarSelecaoSlot(nomeItem) {
+    if (!slotAtualParaSelecao) return;
+    if (slotAtualParaSelecao === 'slot-arma1') {
+        const itemInv = Array.from(document.querySelectorAll('.inv-item')).find(i => i.dataset.nome === nomeItem);
+        if (itemInv && itemInv.dataset.duasmaos === "true") {
+            if (slotAssignments['slot-arma2'] && slotAssignments['slot-arma2'] !== 'BLOQUEADO (2 Mãos)') { alert("Desequipe a Mão Esquerda antes!"); return; }
+            slotAssignments['slot-arma1'] = nomeItem;
+            slotAssignments['slot-arma2'] = 'BLOQUEADO (2 Mãos)';
+            renderizarSlot('slot-arma1', nomeItem);
+            renderizarSlot('slot-arma2', 'BLOQUEADO (2 Mãos)');
+            document.getElementById('modal-selecao-equip').style.display = 'none';
+            salvarAutomaticamente();
+            return;
+        } 
+        if (slotAssignments['slot-arma2'] === 'BLOQUEADO (2 Mãos)') {
+            slotAssignments['slot-arma2'] = '';
+            renderizarSlot('slot-arma2', '');
+        }
+    }
+    if (slotAtualParaSelecao === 'slot-arma2') {
+        if (slotAssignments['slot-arma1']) {
+            const arma1 = Array.from(document.querySelectorAll('.inv-item')).find(i => i.dataset.nome === slotAssignments['slot-arma1']);
+            if (arma1 && arma1.dataset.duasmaos === "true") { alert("Mão direita ocupada por arma de 2 mãos!"); return; }
+        }
+    }
+    slotAssignments[slotAtualParaSelecao] = nomeItem;
+    renderizarSlot(slotAtualParaSelecao, nomeItem);
+    document.getElementById('modal-selecao-equip').style.display = 'none';
+    salvarAutomaticamente();
+}
+
+function renderizarSlot(idSlot, nomeItem) {
+    const slotEl = document.getElementById(idSlot);
+    if(!slotEl) return;
+    const imgEl = slotEl.querySelector('.slot-img');
+    const placeholderEl = slotEl.querySelector('.slot-placeholder');
+    const nameDisplay = document.getElementById(idSlot.replace('slot-', 'name-'));
+    const qtdDisplay = document.getElementById(idSlot.replace('slot-', 'qtd-'));
+    const oldIcon = slotEl.querySelector('.upload-overlay-icon');
+    if(oldIcon) oldIcon.remove();
+    if (nomeItem === 'BLOQUEADO (2 Mãos)') {
+        imgEl.style.display = 'none'; placeholderEl.innerText = "🔒"; placeholderEl.style.display = 'block';
+        if(nameDisplay) nameDisplay.innerText = "(2 Mãos)";
+        slotEl.style.backgroundColor = "#331111";
+        return;
+    } else { slotEl.style.backgroundColor = ""; }
     if (!nomeItem) {
-        display.innerText = "Nenhum item selecionado.";
+        imgEl.style.display = 'none'; placeholderEl.style.display = 'block';
+        if(idSlot.includes('arma')) placeholderEl.innerText = idSlot.includes('1') ? '⚔️' : '🛡️';
+        if(idSlot.includes('armadura')) placeholderEl.innerText = '👕';
+        if(idSlot.includes('acessorio') || idSlot.includes('magico')) placeholderEl.innerText = '💍';
+        if(idSlot.includes('cons')) placeholderEl.innerText = '🧪';
+        if(nameDisplay) nameDisplay.innerText = '-';
+        if(qtdDisplay) qtdDisplay.innerText = '0';
         return;
     }
-
-    // Busca item no DOM do inventário
-    const item = Array.from(document.querySelectorAll('.inv-item')).find(i => i.dataset.nome === nomeItem);
-    if (item) {
-        const desc = item.dataset.desc || "Sem descrição.";
-        const extra = item.dataset.extra ? ` (${item.dataset.extra})` : "";
-        display.innerText = `${nomeItem}${extra}: ${desc}`;
-    }
+    const itemInv = Array.from(document.querySelectorAll('.inv-item')).find(i => i.dataset.nome === nomeItem);
+    if (itemInv) {
+        const imgSrc = itemInv.dataset.imagem;
+        const qtd = itemInv.dataset.qtd;
+        if (imgSrc) { imgEl.src = imgSrc; imgEl.style.display = 'block'; placeholderEl.style.display = 'none'; } 
+        else { imgEl.style.display = 'none'; placeholderEl.style.display = 'block'; placeholderEl.innerText = "📦"; }
+        if(nameDisplay) nameDisplay.innerText = nomeItem;
+        if(qtdDisplay) qtdDisplay.innerText = qtd;
+    } else { if(nameDisplay) nameDisplay.innerText = `${nomeItem} (?)`; }
 }
 
-// --- FUNÇÃO SAVE (ATUALIZADA) ---
+function usarConsumivel(idSlot) {
+    const nomeItem = slotAssignments[idSlot];
+    if (!nomeItem) { alert("Vazio!"); return; }
+    const itemInv = Array.from(document.querySelectorAll('.inv-item')).find(i => i.dataset.nome === nomeItem);
+    if (itemInv) { alterarQtdInventario(itemInv, -1); setTimeout(() => renderizarSlot(idSlot, nomeItem), 100); } 
+    else { alert("Item não encontrado!"); }
+}
+
+// --- FUNÇÃO SAVE ---
 function gerarObjetoFicha() {
     const dados = {
         nome: document.getElementById('nome-personagem-input').value,
@@ -582,88 +680,49 @@ function gerarObjetoFicha() {
             racial: document.getElementById('cabecalho-racial').value,
             info: document.getElementById('cabecalho-info').value
         },
-        imagem: document.getElementById('char-image-display').src, 
+        imagem: document.getElementById('char-image-display').src,
+        imagemCorpo: document.getElementById('full-body-img').src,
+        slotAssignments: slotAssignments,
         titulosPericias: {
-            principal: document.getElementById('titulo-principal') ? document.getElementById('titulo-principal').value : "Perícias Principais",
-            secundaria: document.getElementById('titulo-secundaria') ? document.getElementById('titulo-secundaria').value : "Perícias Secundárias",
-            terciaria: document.getElementById('titulo-terciaria') ? document.getElementById('titulo-terciaria').value : "Perícias Terciárias"
+            principal: document.getElementById('titulo-principal').value,
+            secundaria: document.getElementById('titulo-secundaria').value,
+            terciaria: document.getElementById('titulo-terciaria').value
         },
         recursosAtuais: window.recursosAtuais,
         atributos: {}, batalha: {}, pericias: { principal: [], secundaria: [], terciaria: [] }, skills: [], inventario: [] 
     };
     
-    document.querySelectorAll('.atributo-row').forEach(row => { 
-        dados.atributos[row.dataset.nome] = { valor: parseInt(row.querySelector('.atributo-input').value) || 0, uso: parseInt(row.querySelector('.treino-contador').innerText) || 0 }; 
-    });
-    
+    document.querySelectorAll('.atributo-row').forEach(row => { dados.atributos[row.dataset.nome] = { valor: parseInt(row.querySelector('.atributo-input').value) || 0, uso: parseInt(row.querySelector('.treino-contador').innerText) || 0 }; });
     document.querySelectorAll('.batalha-input').forEach(input => { dados.batalha[input.dataset.id] = input.value; });
-    
-    ['principal', 'secundaria', 'terciaria'].forEach(cat => { 
-        document.getElementById(`pericias-${cat}`).querySelectorAll('.pericia-item').forEach(item => { 
-            dados.pericias[cat].push({ nome: item.querySelector('.pericia-nome').value, raridade: item.querySelector('.pericia-raridade').value, custo: item.dataset.custo }); 
-        }); 
-    });
-    
+    ['principal', 'secundaria', 'terciaria'].forEach(cat => { document.getElementById(`pericias-${cat}`).querySelectorAll('.pericia-item').forEach(item => { dados.pericias[cat].push({ nome: item.querySelector('.pericia-nome').value, raridade: item.querySelector('.pericia-raridade').value, custo: item.dataset.custo }); }); });
     document.querySelectorAll('.skill-item').forEach(item => { 
         const mods = []; 
-        item.querySelectorAll('.modifier-entry').forEach(entry => { 
-            mods.push({ categoria: entry.dataset.category, nome: entry.dataset.modName, rep: parseInt(entry.dataset.repetitions), baseCost: parseFloat(entry.dataset.baseCost) }); 
-        }); 
+        item.querySelectorAll('.modifier-entry').forEach(entry => { mods.push({ categoria: entry.dataset.category, nome: entry.dataset.modName, rep: parseInt(entry.dataset.repetitions), baseCost: parseFloat(entry.dataset.baseCost) }); }); 
         dados.skills.push({ nome: item.querySelector('.skill-nome').value, raridade: item.querySelector('.skill-raridade-select').value, tipo: item.dataset.tipo, custoRecurso: item.dataset.recurso, descricao: item.querySelector('.skill-descricao').value, modificadores: mods }); 
     });
-    
     document.querySelectorAll('.inv-item').forEach(item => { 
-        const checkbox = item.querySelector('.inv-equip-check'); 
         dados.inventario.push({ 
-            categoria: item.dataset.categoria, 
-            raridade: item.dataset.raridade, 
-            nome: item.dataset.nome, 
-            qtd: item.dataset.qtd, 
-            desc: item.dataset.desc, 
-            extra: item.dataset.extra, 
-            imagem: item.dataset.imagem, // Nova propriedade
-            equipado: checkbox ? checkbox.checked : false 
+            categoria: item.dataset.categoria, raridade: item.dataset.raridade, nome: item.dataset.nome, qtd: item.dataset.qtd, desc: item.dataset.desc, extra: item.dataset.extra, imagem: item.dataset.imagem, duasMaos: item.dataset.duasmaos
         }); 
     });
-    
     return dados;
 }
-
 function aplicarDadosNaTela(dados) {
     if(dados.nome) document.getElementById('nome-personagem-input').value = dados.nome;
     if(dados.imagem) document.getElementById('char-image-display').src = dados.imagem;
-    
-    if(dados.titulosPericias) { if(document.getElementById('titulo-principal')) document.getElementById('titulo-principal').value = dados.titulosPericias.principal || "Perícias Principais"; if(document.getElementById('titulo-secundaria')) document.getElementById('titulo-secundaria').value = dados.titulosPericias.secundaria || "Perícias Secundárias"; if(document.getElementById('titulo-terciaria')) document.getElementById('titulo-terciaria').value = dados.titulosPericias.terciaria || "Perícias Terciárias"; }
+    if(dados.imagemCorpo) document.getElementById('full-body-img').src = dados.imagemCorpo;
+    if(dados.titulosPericias) { if(document.getElementById('titulo-principal')) document.getElementById('titulo-principal').value = dados.titulosPericias.principal; if(document.getElementById('titulo-secundaria')) document.getElementById('titulo-secundaria').value = dados.titulosPericias.secundaria; if(document.getElementById('titulo-terciaria')) document.getElementById('titulo-terciaria').value = dados.titulosPericias.terciaria; }
     if(dados.cabecalho) { if(document.getElementById('cabecalho-talento')) document.getElementById('cabecalho-talento').value = dados.cabecalho.talento || ""; if(document.getElementById('cabecalho-ascensao')) document.getElementById('cabecalho-ascensao').value = dados.cabecalho.ascensao || ""; if(document.getElementById('cabecalho-racial')) document.getElementById('cabecalho-racial').value = dados.cabecalho.racial || ""; if(document.getElementById('cabecalho-info')) document.getElementById('cabecalho-info').value = dados.cabecalho.info || ""; document.querySelectorAll('.auto-resize').forEach(el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }); }
     if (dados.recursosAtuais) { window.recursosAtuais = dados.recursosAtuais; } else { window.recursosAtuais = null; }
     if (dados.atributos) { document.querySelectorAll('.atributo-row').forEach(row => { const nomeAttr = row.dataset.nome; if (dados.atributos[nomeAttr]) { let valor = typeof dados.atributos[nomeAttr] === 'object' ? dados.atributos[nomeAttr].valor : dados.atributos[nomeAttr]; let uso = typeof dados.atributos[nomeAttr] === 'object' ? dados.atributos[nomeAttr].uso : 0; row.querySelector('.atributo-input').value = valor; row.querySelector('.treino-contador').innerText = uso; } }); }
-    
     ['principal', 'secundaria', 'terciaria'].forEach(cat => { const container = document.getElementById(`pericias-${cat}`); container.innerHTML = ''; if(dados.pericias && dados.pericias[cat]) dados.pericias[cat].forEach(p => { const novo = criarPericiaElement(cat, p); container.appendChild(novo); calcularCustoPericia(novo.querySelector('.pericia-raridade')); }); });
-    
-    // Skills
-    document.getElementById('container-visualizacao').innerHTML = ''; 
-    document.getElementById('skills-storage').innerHTML = ''; 
-    const storage = document.getElementById('skills-storage'); 
-    if(dados.skills) dados.skills.forEach(s => storage.appendChild(criarSkillElement(s))); 
-    organizarSkillsVisualmente();
-    
-    // Inventário
-    const invContainer = document.getElementById('inventario-container'); 
-    invContainer.innerHTML = ''; 
-    if(dados.inventario) {
-        dados.inventario.forEach(item => criarElementoItem(invContainer, item));
+    document.getElementById('container-visualizacao').innerHTML = ''; document.getElementById('skills-storage').innerHTML = ''; const storage = document.getElementById('skills-storage'); if(dados.skills) dados.skills.forEach(s => storage.appendChild(criarSkillElement(s))); organizarSkillsVisualmente();
+    const invContainer = document.getElementById('inventario-container'); invContainer.innerHTML = ''; if(dados.inventario) { dados.inventario.forEach(item => criarElementoItem(invContainer, item)); }
+    if (dados.batalha) { document.querySelectorAll('.batalha-input').forEach(input => { if(dados.batalha[input.dataset.id]) input.value = dados.batalha[input.dataset.id]; }); }
+    if (dados.slotAssignments) {
+        slotAssignments = dados.slotAssignments;
+        setTimeout(() => { for (const [id, nome] of Object.entries(slotAssignments)) { renderizarSlot(id, nome); } }, 100);
     }
-    
-    // IMPORTANTE: Atualiza selects APÓS criar itens
-    atualizarSelectsEquipamento();
-
-    // Aplica valores de batalha (inputs e selects)
-    if (dados.batalha) { 
-        document.querySelectorAll('.batalha-input').forEach(input => { 
-            if(dados.batalha[input.dataset.id]) input.value = dados.batalha[input.dataset.id]; 
-        }); 
-    }
-
     mudarAbaInventario('equipado');
     atualizarSistemaCompleto();
 }
@@ -672,28 +731,38 @@ function baixarFicha() { const dados = gerarObjetoFicha(); const a = document.cr
 function carregarFicha(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const dados = JSON.parse(e.target.result); aplicarDadosNaTela(dados); salvarAutomaticamente(); alert("Ficha carregada com sucesso!"); } catch (err) { console.error(err); alert("Erro ao ler o arquivo JSON: " + err.message); } }; reader.readAsText(file); }
 function rolarD20() { const resultado = Math.floor(Math.random() * 20) + 1; let msg = ""; if (resultado === 20) msg = " (CRÍTICO!)"; else if (resultado === 1) msg = " (FALHA!)"; alert(`🎲 Resultado D20: ${resultado}${msg}`); }
 
+// --- IA ---
+async function gerarImagemIA() {
+    const nome = document.getElementById('modal-inv-nome').value;
+    const descGeral = document.getElementById('modal-inv-desc').value;
+    const descVisual = document.getElementById('modal-img-prompt') ? document.getElementById('modal-img-prompt').value : ""; 
+    const tipo = document.getElementById('modal-inv-categoria').value;
+    const btn = document.getElementById('btn-gerar-ia');
+    if (!nome) { alert("Digite o Nome do item primeiro!"); return; }
+    const textoOriginal = btn.innerText; btn.innerText = "⏳ Criando..."; btn.disabled = true;
+    let textoParaIA = ""; if (descVisual && descVisual.trim() !== "") { textoParaIA = descVisual; } else { textoParaIA = `${nome}, ${descGeral}`; }
+    const promptBase = `RPG item icon, ${tipo}, ${textoParaIA}, white background, fantasy art style, high quality, 2d game asset, no text, centered, full color`;
+    const promptEncoded = encodeURIComponent(promptBase);
+    const seed = Math.floor(Math.random() * 999999);
+    const url = `https://image.pollinations.ai/prompt/${promptEncoded}?width=256&height=256&seed=${seed}&model=nanobanana-pro&nologo=true`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Erro na API");
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = function() { tempItemImage = reader.result; mostrarPreview(tempItemImage); finalizarBotao(btn, textoOriginal); }
+        reader.readAsDataURL(blob);
+    } catch (error) { tempItemImage = url; mostrarPreview(url); finalizarBotao(btn, textoOriginal); }
+}
+function mostrarPreview(src) { const imgPreview = document.getElementById('modal-img-preview'); const boxPreview = document.getElementById('modal-img-preview-box'); imgPreview.src = src; boxPreview.style.display = 'flex'; }
+function finalizarBotao(btn, texto) { btn.innerText = texto; btn.disabled = false; }
+
 // --- FIREBASE ---
 const firebaseConfig = { apiKey: "AIzaSyB4tfFp463ZwSHTW22uiyV35GwdlCEgk8k", authDomain: "ficha-rpg-3112e.firebaseapp.com", projectId: "ficha-rpg-3112e", storageBucket: "ficha-rpg-3112e.firebasestorage.app", messagingSenderId: "1009323913618", appId: "1:1009323913618:web:202ed84838549bf990514b" };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(); const db = firebase.firestore(); let usuarioAtual = null;
-
-auth.onAuthStateChanged((user) => { 
-    if (user) { 
-        usuarioAtual = user; 
-        document.getElementById('login-modal').style.display = 'none'; 
-    } else { 
-        usuarioAtual = null; 
-        document.getElementById('login-modal').style.display = 'flex'; 
-    } 
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-    carregarDadosAutomaticos();
-    document.querySelectorAll('input, textarea, select').forEach(el => { el.addEventListener('input', salvarAutomaticamente); el.addEventListener('change', salvarAutomaticamente); });
-    document.querySelectorAll('.auto-resize').forEach(textarea => { textarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; }); });
-    organizarSkillsVisualmente(); atualizarSistemaCompleto();
-});
-
+auth.onAuthStateChanged((user) => { if (user) { usuarioAtual = user; document.getElementById('login-modal').style.display = 'none'; } else { usuarioAtual = null; document.getElementById('login-modal').style.display = 'flex'; } });
+window.addEventListener('DOMContentLoaded', () => { carregarDadosAutomaticos(); document.querySelectorAll('input, textarea, select').forEach(el => { el.addEventListener('input', salvarAutomaticamente); el.addEventListener('change', salvarAutomaticamente); }); document.querySelectorAll('.auto-resize').forEach(textarea => { textarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; }); }); organizarSkillsVisualmente(); atualizarSistemaCompleto(); });
 function fazerLogin() { const email = document.getElementById('email-input').value.trim(); const pass = document.getElementById('senha-input').value.trim(); const msg = document.getElementById('msg-erro'); if (!email || !pass) { msg.innerText = "Por favor, preencha E-mail e Senha."; return; } auth.signInWithEmailAndPassword(email, pass).catch((error) => { msg.innerText = "Erro no login: " + error.code; }); }
 function criarConta() { const email = document.getElementById('email-input').value.trim(); const pass = document.getElementById('senha-input').value.trim(); const msg = document.getElementById('msg-erro'); if (!email || !pass) { msg.innerText = "Preencha E-mail e Senha."; return; } auth.createUserWithEmailAndPassword(email, pass).catch((error) => { msg.innerText = "Erro ao criar: " + error.code; }); }
 function fazerLogout() { auth.signOut(); }
@@ -706,111 +775,3 @@ function carregarDaNuvem(idDoc) { db.collection("fichas").doc(idDoc).get().then(
 function deletarDaNuvem(idDoc) { if(confirm("Apagar ficha da nuvem?")) { db.collection("fichas").doc(idDoc).delete().then(() => listarFichasNuvem()); } }
 function atualizarGrafico() { const ctx = document.getElementById('graficoAtributos'); if (!ctx) return; const dados = [ getAttrValue("Forca"), getAttrValue("Destreza"), getAttrValue("Agilidade"), getAttrValue("Resistencia"), getAttrValue("Espírito"), getAttrValue("Carisma"), getAttrValue("Inteligencia") ]; if (graficoInstance) { graficoInstance.data.datasets[0].data = dados; graficoInstance.update(); return; } graficoInstance = new Chart(ctx, { type: 'radar', data: { labels: ['FOR', 'DES', 'AGI', 'RES', 'ESP', 'CAR', 'INT'], datasets: [{ label: 'Nível', data: dados, backgroundColor: 'rgba(139, 0, 0, 0.4)', borderColor: '#8B0000', borderWidth: 2, pointBackgroundColor: '#B8860B', pointBorderColor: '#2E2315' }] }, options: { scales: { r: { angleLines: { color: 'rgba(0,0,0,0.2)' }, grid: { color: 'rgba(0,0,0,0.1)' }, pointLabels: { color: '#5c0a0a', font: { size: 12, family: 'Cinzel' } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 10 } }, plugins: { legend: { display: false } } } }); }
 function gerarPDF() { const elemento = document.querySelector(".container"); const opt = { margin: [5, 5, 5, 5], filename: 'Grimorio.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#e3dcd2', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(elemento).save(); }
-
-// --- FUNÇÃO DE GERAÇÃO DE IMAGEM IA (ATUALIZADA COM PROMPT VISUAL) ---
-async function gerarImagemIA() {
-    const nome = document.getElementById('modal-inv-nome').value;
-    const descGeral = document.getElementById('modal-inv-desc').value;
-    const descVisual = document.getElementById('modal-img-prompt').value; // Novo Campo
-    const tipo = document.getElementById('modal-inv-categoria').value;
-    const btn = document.getElementById('btn-gerar-ia');
-
-    if (!nome) {
-        alert("Digite o Nome do item primeiro!");
-        return;
-    }
-
-    const textoOriginal = btn.innerText;
-    btn.innerText = "⏳ Criando...";
-    btn.disabled = true;
-
-    // LÓGICA DO PROMPT:
-    // Se o usuário escreveu algo na "Descrição Visual", usamos ela.
-    // Se não, usamos a descrição geral + nome.
-    let textoParaIA = "";
-    if (descVisual && descVisual.trim() !== "") {
-        textoParaIA = descVisual;
-    } else {
-        textoParaIA = `${nome}, ${descGeral}`;
-    }
-
-    // Monta o Prompt final
-    const promptBase = `RPG item icon, ${tipo}, ${textoParaIA}, white background, fantasy art style, high quality, 2d game asset, no text, centered, full color`;
-    const promptEncoded = encodeURIComponent(promptBase);
-    const seed = Math.floor(Math.random() * 999999);
-    
-    // URL COM NANOBANANA-PRO
-    const url = `https://image.pollinations.ai/prompt/${promptEncoded}?width=256&height=256&seed=${seed}&model=nanobanana-pro&nologo=true`;
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Erro na API");
-
-        const blob = await response.blob();
-        
-        const reader = new FileReader();
-        reader.onloadend = function() {
-            tempItemImage = reader.result; 
-            mostrarPreview(tempItemImage);
-            finalizarBotao(btn, textoOriginal);
-        }
-        reader.readAsDataURL(blob);
-
-    } catch (error) {
-        console.warn("Erro ao baixar (CORS) ou Modelo Premium. Usando link direto.", error);
-        
-        tempItemImage = url; 
-        mostrarPreview(url);
-        finalizarBotao(btn, textoOriginal);
-        avisarLinkOnline();
-    }
-}
-
-// Atualizar também a função de abrir o modal para limpar o campo novo
-function abrirModalItem() {
-    document.getElementById('modal-inv-nome').value = '';
-    document.getElementById('modal-inv-qtd').value = 1;
-    document.getElementById('modal-inv-desc').value = '';
-    
-    // LIMPAR O NOVO CAMPO
-    if(document.getElementById('modal-img-prompt')) {
-        document.getElementById('modal-img-prompt').value = '';
-    }
-
-    document.getElementById('modal-inv-categoria').value = 'arma';
-    document.getElementById('modal-img-preview').src = '';
-    document.getElementById('modal-img-preview-box').style.display = 'none';
-    document.getElementById('modal-img-upload').value = '';
-    tempItemImage = null;
-    
-    // Limpar avisos antigos
-    const aviso = document.getElementById('aviso-link');
-    if(aviso) aviso.remove();
-    
-    handleModalCategoryChange();
-    document.getElementById('item-modal').style.display = 'flex';
-}
-
-function mostrarPreview(src) {
-    const imgPreview = document.getElementById('modal-img-preview');
-    const boxPreview = document.getElementById('modal-img-preview-box');
-    imgPreview.src = src;
-    boxPreview.style.display = 'flex';
-}
-
-function finalizarBotao(btn, texto) {
-    btn.innerText = texto;
-    btn.disabled = false;
-}
-
-function avisarLinkOnline() {
-    const box = document.getElementById('modal-img-preview-box');
-    if(!document.getElementById('aviso-link')) {
-        const msg = document.createElement('div');
-        msg.id = 'aviso-link';
-        msg.innerText = "⚠️ Imagem via Link (Online)";
-        msg.style.color = "orange";
-        msg.style.fontSize = "0.7rem";
-        box.appendChild(msg);
-    }
-}
