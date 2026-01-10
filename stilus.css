@@ -432,3 +432,139 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
     background: red;
     transform: scale(1.1);
 }
+/* --- ABAS DESLIZANTES (CARROSSEL) --- */
+.tabs-principal {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap !important; /* Força linha única */
+    overflow-x: auto;          /* Permite rolar para o lado */
+    -webkit-overflow-scrolling: touch; 
+    gap: 8px;
+    padding-bottom: 5px;
+    scrollbar-width: none; /* Firefox */
+    width: 100%;
+}
+.tabs-principal::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+.tab-principal-btn {
+    flex: 0 0 auto; /* Não encolhe */
+    white-space: nowrap;
+}
+/* ==========================================================================
+   MOBILE (CELULAR) - ATUALIZADO
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+
+    /* --- LAYOUT GERAL --- */
+    .container {
+        flex-direction: column;
+        padding: 5px;
+        overflow-x: hidden; /* Evita rolagem lateral da página inteira */
+    }
+
+    .col-esq, .col-centro, .col-dir {
+        width: 100%;
+        margin-bottom: 20px;
+        border-right: none;
+        border-bottom: 1px solid #444;
+        padding-bottom: 20px;
+    }
+
+    /* --- CABEÇALHO --- */
+    #nome-personagem-input { font-size: 1.5rem; text-align: center; }
+    .header-details { grid-template-columns: 1fr; gap: 5px; }
+
+    /* --- ATRIBUTOS (ALINHAMENTO PERFEITO) --- */
+    .atributo-row {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        padding: 4px 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* 1. Nome (Largura Fixa) */
+    .atributo-nome {
+        flex: 0 0 65px !important;
+        width: 65px !important;
+        font-size: 0.85rem !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* 2. Centro (Input e Botões +/- Pequenos) */
+    .atributo-input-group {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 1 !important;
+    }
+
+    .atributo-input-group button {
+        width: 22px !important;      /* Botão Quadrado Pequeno */
+        height: 22px !important;
+        font-size: 0.8rem !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    .atributo-input {
+        width: 35px !important;
+        height: 22px !important;
+        font-size: 0.9rem !important;
+        margin: 0 4px !important;
+        text-align: center !important;
+    }
+
+    /* 3. Direita (Treino Alinhado) */
+    .treino-container {
+        flex: 0 0 50px !important; /* Coluna fixa para alinhar os números */
+        width: 50px !important;
+        display: flex !important;
+        justify-content: flex-end !important; /* Alinha à direita */
+    }
+    
+    .treino-contador { font-size: 0.8rem !important; }
+    
+    .treinar-btn {
+        height: 22px !important;
+        line-height: 22px !important;
+        padding: 0 5px !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* --- SLOTS EM GRADE (GRID) --- */
+    .equip-grid, #consumiveis-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px;
+    }
+
+    .equip-slot {
+        width: 55px !important;   /* Levemente menor para caber mais */
+        height: 55px !important;
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+    }
+    
+    .consumivel-compacto {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        margin: 0 !important;
+        width: auto !important;
+    }
+
+    /* --- MODAIS E OUTROS --- */
+    .modal-content { width: 95%; margin: 5% auto; max-height: 90vh; }
+    .inv-item { flex-direction: column; align-items: flex-start; }
+    .inv-main-row { width: 100%; display: flex; flex-direction: row; }
+}

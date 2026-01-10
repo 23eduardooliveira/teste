@@ -496,6 +496,7 @@ function confirmarSelecaoSlot(nomeItem) {
 function renderizarSlot(idSlot, nomeItem) {
     const slotEl = document.getElementById(idSlot);
     if(!slotEl) return;
+    
     const imgEl = slotEl.querySelector('.slot-img');
     const placeholderEl = slotEl.querySelector('.slot-placeholder');
     const nameDisplay = document.getElementById(idSlot.replace('slot-', 'name-'));
@@ -503,12 +504,21 @@ function renderizarSlot(idSlot, nomeItem) {
     const oldIcon = slotEl.querySelector('.upload-overlay-icon');
     if(oldIcon) oldIcon.remove();
 
+    // Limpa tooltip anterior
+    if (slotEl._tippy) {
+        slotEl._tippy.destroy();
+    }
+
+    // Caso 1: Bloqueado (2 Mãos)
     if (nomeItem === 'BLOQUEADO (2 Mãos)') {
         imgEl.style.display = 'none'; placeholderEl.innerText = "🔒"; placeholderEl.style.display = 'block';
         if(nameDisplay) nameDisplay.innerText = "(2 Mãos)";
         slotEl.style.backgroundColor = "#331111";
+        tippy(slotEl, { content: "Slot bloqueado pela arma de duas mãos", theme: 'translucent' });
         return;
     } else { slotEl.style.backgroundColor = ""; }
+
+    // Caso 2: Slot Vazio
     if (!nomeItem) {
         imgEl.style.display = 'none'; placeholderEl.style.display = 'block';
         if(idSlot.includes('arma')) placeholderEl.innerText = idSlot.includes('1') ? '⚔️' : '🛡️';
@@ -519,15 +529,57 @@ function renderizarSlot(idSlot, nomeItem) {
         if(qtdDisplay) qtdDisplay.innerText = '0';
         return;
     }
+
+    // Caso 3: Item Equipado
     const itemInv = Array.from(document.querySelectorAll('.inv-item')).find(i => i.dataset.nome === nomeItem);
+    
     if (itemInv) {
         const imgSrc = itemInv.dataset.imagem;
         const qtd = itemInv.dataset.qtd;
+        const desc = itemInv.dataset.desc || "Sem descrição";
+        const raridade = itemInv.dataset.raridade || "Comum";
+        const extra = itemInv.dataset.extra ? `(${itemInv.dataset.extra})` : "";
+        const corRaridade = CORES_TEXTO_RARIDADE[raridade] || '#fff';
+        
+        // Atualiza visual do slot
         if (imgSrc) { imgEl.src = imgSrc; imgEl.style.display = 'block'; placeholderEl.style.display = 'none'; } 
         else { imgEl.style.display = 'none'; placeholderEl.style.display = 'block'; placeholderEl.innerText = "📦"; }
+        
         if(nameDisplay) nameDisplay.innerText = nomeItem;
         if(qtdDisplay) qtdDisplay.innerText = qtd;
-    } else { if(nameDisplay) nameDisplay.innerText = `${nomeItem} (?)`; }
+
+        // --- CONSTRUÇÃO DO TOOLTIP COM QUEBRA DE LINHA ---
+        // 'white-space: pre-wrap' faz o texto respeitar os Enters do textarea
+        const htmlTooltip = `
+            <div style="text-align: center; min-width: 200px; max-width: 300px;">
+                <strong style="color: var(--cor-destaque); font-size: 1rem; display:block; margin-bottom:2px;">${nomeItem}</strong>
+                <span style="font-size: 0.8rem; color: #ccc;">${extra}</span>
+                <div style="font-size: 0.75rem; color: ${corRaridade}; margin-bottom: 5px; font-weight: bold;">${raridade}</div>
+                <hr style="border-color: #555; margin: 4px 0;">
+                <div style="
+                    font-size: 0.85rem; 
+                    text-align: left; 
+                    line-height: 1.4; 
+                    white-space: pre-wrap; /* O SEGREDO ESTÁ AQUI */
+                    word-wrap: break-word;
+                    color: #e0e0e0;
+                ">${desc}</div>
+            </div>
+        `;
+
+        tippy(slotEl, {
+            content: htmlTooltip,
+            allowHTML: true,
+            theme: 'translucent',
+            animation: 'scale',
+            placement: 'top',
+            maxWidth: 350 // Garante que não fique largo demais se o texto for longo
+        });
+
+    } else { 
+        if(nameDisplay) nameDisplay.innerText = `${nomeItem} (?)`; 
+        tippy(slotEl, { content: "Item não encontrado no inventário", theme: 'translucent' });
+    }
 }
 
 function usarConsumivel(idSlot) {
