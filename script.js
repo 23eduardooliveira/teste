@@ -823,3 +823,18 @@ function mostrarPreview(src) { const imgPreview = document.getElementById('modal
 function finalizarBotao(btn, texto) { btn.innerText = texto; btn.disabled = false; }
 function atualizarGrafico() { const ctx = document.getElementById('graficoAtributos'); if (!ctx) return; const dados = [ getAttrValue("Forca"), getAttrValue("Destreza"), getAttrValue("Agilidade"), getAttrValue("Resistencia"), getAttrValue("Espírito"), getAttrValue("Carisma"), getAttrValue("Inteligencia") ]; if (graficoInstance) { graficoInstance.data.datasets[0].data = dados; graficoInstance.update(); return; } graficoInstance = new Chart(ctx, { type: 'radar', data: { labels: ['FOR', 'DES', 'AGI', 'RES', 'ESP', 'CAR', 'INT'], datasets: [{ label: 'Nível', data: dados, backgroundColor: 'rgba(139, 0, 0, 0.4)', borderColor: '#8B0000', borderWidth: 2, pointBackgroundColor: '#B8860B', pointBorderColor: '#2E2315' }] }, options: { scales: { r: { angleLines: { color: 'rgba(0,0,0,0.2)' }, grid: { color: 'rgba(0,0,0,0.1)' }, pointLabels: { color: '#5c0a0a', font: { size: 12, family: 'Cinzel' } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 10 } }, plugins: { legend: { display: false } } } }); }
 function gerarPDF() { const elemento = document.querySelector(".container"); const opt = { margin: [5, 5, 5, 5], filename: 'Grimorio.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#e3dcd2', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(elemento).save(); }
+
+// --- FUNÇÃO QUE FALTOU: UPLOAD DE CORPO INTEIRO ---
+function carregarImagemCorpo(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Redimensiona para 400px (bom tamanho para corpo inteiro sem pesar o save)
+        redimensionarImagem(file, 1024, (base64) => {
+             const img = document.getElementById('full-body-img');
+             if(img) {
+                 img.src = base64;
+                 salvarAutomaticamente();
+             }
+        });
+    }
+}
