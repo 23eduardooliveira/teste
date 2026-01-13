@@ -281,7 +281,7 @@ hr { margin: 25px 0; border: 0; border-top: 1px solid var(--cor-borda-sutil); op
 .btn-fechar-slot:hover { background: red; transform: scale(1.1); }
 
 /* BATALHA STATS */
-.battle-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.battle-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
 .battle-group { background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; text-align: center; border: 1px solid rgba(0,0,0,0.1); }
 .battle-group label { display: block; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; color: var(--cor-borda-forte); margin-bottom: 2px; }
 .batalha-input { width: 100%; background: transparent; border: none; text-align: center; font-weight: bold; font-size: 1.2rem; font-family: 'Cinzel', serif; color: var(--cor-titulo); }

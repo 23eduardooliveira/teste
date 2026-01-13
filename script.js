@@ -1,5 +1,5 @@
 /* ================================================================================
-   SCRIPT.JS - VERSÃO COMPLETA (LISTA GIGANTE RESTAURADA + NOVOS STATUS)
+   SCRIPT.JS - VERSÃO CORRIGIDA (CÁLCULO DE STATUS BLINDADO)
    ================================================================================ */
 
 // --- VARIÁVEIS GLOBAIS ---
@@ -24,7 +24,6 @@ let slotAtualParaSelecao = null;
 let tempItemImage = null; 
 
 // --- MAPA DE STATUS AUTOMÁTICOS (Status -> Atributo Base) ---
-// Baseado na sua lista solicitada
 const MAPA_STATUS_ATRIBUTO = {
     // FÍSICO
     'precisão': 'Destreza', 'precisao': 'Destreza',
@@ -33,8 +32,6 @@ const MAPA_STATUS_ATRIBUTO = {
     'aparo': 'Destreza',
     'iniciativa': 'Agilidade',
     'esquiva': 'Agilidade',
-    'atletismo': 'Forca',
-    'vigor': 'Resistencia',
 
     // MÁGICO
     'acerto mágico': 'Espírito', 'acerto magico': 'Espírito',
@@ -52,7 +49,8 @@ const MAPA_STATUS_ATRIBUTO = {
     // ESPECIAIS (Sem atributo base, apenas mods)
     'deslocamento': null,
     'área crítica': null, 'area critica': null, 'critico aprimorado': null,
-    'furtividade': 'Agilidade'
+    'resistir magia': null,
+    'defesa real': null
 };
 
 // --- CORES & LISTAS ---
@@ -67,224 +65,28 @@ const CORES_TEXTO_RARIDADE = {
 const CUSTO_RARIDADE = { 'Comum': 1, 'Incomum': 3, 'Raro': 6, 'Épico': 14, 'Lendário': 18, 'Mítico': 22 };
 const CUSTO_BASE_SKILL_ATIVA = { 'Comum': 10, 'Incomum': 15, 'Raro': 20, 'Rarissima': 25, 'Epico': 30, 'Lendario': 35, 'Mitico': 40 };
 
-// --- LISTA COMPLETA DE MODIFICADORES (RESTAURADA) ---
+// LISTA DE MODIFICADORES
 const SKILL_MODIFIERS = {
-    // CATEGORIA NOVA: Para somar nos status da ficha
     'Bônus de Status (Stats)': [
-        { nome: 'Precisão', custo: 1 },
-        { nome: 'Dano Físico', custo: 1 },
-        { nome: 'Defesa Física', custo: 1 },
-        { nome: 'Acerto Mágico', custo: 1 },
-        { nome: 'Dano Mágico', custo: 1 },
-        { nome: 'Defesa Mágica', custo: 1 },
-        { nome: 'Acerto Psíquico', custo: 1 },
-        { nome: 'Dano Psíquico', custo: 1 },
-        { nome: 'Defesa Psíquica', custo: 1 },
-        { nome: 'Iniciativa', custo: 1 },
-        { nome: 'Deslocamento', custo: 3 },
-        { nome: 'Esquiva', custo: 1 },
-        { nome: 'Aparo', custo: 1 },
-        { nome: 'Área Crítica (Crítico Aprimorado)', custo: 5 },
-        { nome: 'Resistir Mágia', custo: 1 }
+        { nome: 'Precisão', custo: 1 }, { nome: 'Dano Físico', custo: 1 }, { nome: 'Defesa Física', custo: 1 },
+        { nome: 'Acerto Mágico', custo: 1 }, { nome: 'Dano Mágico', custo: 1 }, { nome: 'Defesa Mágica', custo: 1 },
+        { nome: 'Acerto Psíquico', custo: 1 }, { nome: 'Dano Psíquico', custo: 1 }, { nome: 'Defesa Psíquica', custo: 1 },
+        { nome: 'Iniciativa', custo: 1 }, { nome: 'Deslocamento', custo: 3 }, { nome: 'Esquiva', custo: 1 },
+        { nome: 'Aparo', custo: 1 }, { nome: 'Área Crítica (Crítico Aprimorado)', custo: 5 },
+        { nome: 'Resistir Mágia', custo: 1 }, { nome: 'Defesa real', custo: 1 },
     ],
-    'Alcances Básicos': [ 
-        { nome: 'Toque', custo: 0 }, 
-        { nome: 'Projétil', custo: 0.5 }, 
-        { nome: 'Feitiço', custo: 1 }, 
-        { nome: 'Raio', custo: 3 }, 
-        { nome: 'Cone', custo: 1 } 
-    ],
-    'Modificadores Gerais': [ 
-        { nome: 'Ataques Extras', custo: 7 }, 
-        { nome: 'Efeito Sustentado', custo: 0 }, 
-        { nome: 'Redução de custo', custo: 2 } 
-    ],
-    'Efeitos Imediatos': [ 
-        { nome: 'Dano (Genérico)', custo: 1 }, 
-        { nome: 'Saque Rápido', custo: 2 }, 
-        { nome: 'Avançar', custo: 2 }, 
-        { nome: 'Investida', custo: 1 }, 
-        { nome: 'Teleporte', custo: 3 }, 
-        { nome: 'Empurrar', custo: 2 }, 
-        { nome: 'Puxar', custo: 2 }, 
-        { nome: 'Manobrar', custo: 3 }, 
-        { nome: 'Decoy', custo: 1 }, 
-        { nome: 'Nexus', custo: 5 }, 
-        { nome: 'Terminus', custo: 5 }, 
-        { nome: 'Panaceia', custo: 3 }, 
-        { nome: 'Ilusão Visual', custo: 1 }, 
-        { nome: 'Ilusão Auditiva', custo: 1 }, 
-        { nome: 'Ilusão Olfativa', custo: 1 }, 
-        { nome: 'Ilusão Tátil', custo: 1 }, 
-        { nome: 'Desarmar', custo: 3 }, 
-        { nome: 'Derrubar', custo: 3 }, 
-        { nome: 'Brutalidade', custo: 5 }, 
-        { nome: 'Absorver Marcas', custo: 3 } 
-    ],
-    'Buff/Debuff': [ 
-        { nome: 'Proteção', custo: 1 }, 
-        { nome: 'Dano (Buff)', custo: 1 }, 
-        { nome: 'Duração de Buff/Debuff', custo: 3 }, 
-        { nome: 'Raridade de Arma', custo: 5 }, 
-        { nome: 'Raridade de Armadura', custo: 5 }, 
-        { nome: 'Sobrevida', custo: 0.5 }, 
-        { nome: 'Duração', custo: 1 } 
-    ],
-    'Status Positivos': [ 
-        { nome: 'Arma Encantada', custo: 3 }, 
-        { nome: 'Aparo Desarmado', custo: 3 }, 
-        { nome: 'Aparo Aprimorado', custo: 3 }, 
-        { nome: 'Desengajar', custo: 3 }, 
-        { nome: 'Esmaecer', custo: 3 }, 
-        { nome: 'Regeneração I', custo: 3 }, 
-        { nome: 'Liberdade', custo: 3 }, 
-        { nome: 'Triagem', custo: 3 }, 
-        { nome: 'Força do Gigante', custo: 3 }, 
-        { nome: 'Reflexo Felino', custo: 3 }, 
-        { nome: 'Olho de Águia', custo: 3 }, 
-        { nome: 'Couro de Elefante', custo: 3 }, 
-        { nome: 'Aura do Unicórnio', custo: 3 }, 
-        { nome: 'Astúcia da Raposa', custo: 3 }, 
-        { nome: 'Persuasão Feérica', custo: 3 }, 
-        { nome: 'Refletir Dano I', custo: 3 }, 
-        { nome: 'Aparo Místico', custo: 5 }, 
-        { nome: 'Defletir', custo: 5 }, 
-        { nome: 'Contra-ataque', custo: 5 }, 
-        { nome: 'Adrenalina', custo: 5 }, 
-        { nome: 'Erudição', custo: 5 }, 
-        { nome: 'Foco', custo: 5 }, 
-        { nome: 'Regeneração II', custo: 5 }, 
-        { nome: 'Assepsia', custo: 5 }, 
-        { nome: 'Autonomia', custo: 5 }, 
-        { nome: 'Solidez', custo: 5 }, 
-        { nome: 'Refletir Dano II', custo: 5 }, 
-        { nome: 'Invisibilidade', custo: 7 }, 
-        { nome: 'Regeneração III', custo: 7 }, 
-        { nome: 'Prevenção', custo: 7 }, 
-        { nome: 'Refletir Dano III', custo: 10 } 
-    ],
-    'Barreiras': [ 
-        { nome: 'Barreira Mística: Espaços Ocupados', custo: 1 }, 
-        { nome: 'Barreira Mística: Altura da Barreira', custo: 1 }, 
-        { nome: 'Barreira Mística: Duração da Barreira', custo: 1 }, 
-        { nome: 'Barreira Mística: Proteção Bônus', custo: 1 }, 
-        { nome: 'Barreira Cinética: Espaços Ocupados', custo: 1 }, 
-        { nome: 'Barreira Cinética: Altura da Barreira', custo: 1 }, 
-        { nome: 'Barreira Cinética: Resistência da Barreira', custo: 1 } 
-    ],
-    'Status Negativos': [ 
-        { nome: 'Dano Contínuo I', custo: 3 }, 
-        { nome: 'Derreter', custo: 3 }, 
-        { nome: 'Congelado', custo: 3 }, 
-        { nome: 'Peso', custo: 3 }, 
-        { nome: 'Exaustão', custo: 3 }, 
-        { nome: 'Mana Burn', custo: 3 }, 
-        { nome: 'Desconexão', custo: 3 }, 
-        { nome: 'Pasmar', custo: 3 }, 
-        { nome: 'Bloqueio Psíquico', custo: 3 }, 
-        { nome: 'Imobilização', custo: 3 }, 
-        { nome: 'Distração', custo: 3 }, 
-        { nome: 'Atraso', custo: 3 }, 
-        { nome: 'Sufocamento', custo: 3 }, 
-        { nome: 'Inflamação', custo: 3 }, 
-        { nome: 'Afugentado', custo: 3 }, 
-        { nome: 'Dissociação', custo: 3 }, 
-        { nome: 'Confusão', custo: 3 }, 
-        { nome: 'Vertigem', custo: 3 }, 
-        { nome: 'Dano Contínuo II', custo: 5 }, 
-        { nome: 'Lentidão', custo: 5 }, 
-        { nome: 'Estupidez', custo: 5 }, 
-        { nome: 'Ruído', custo: 5 }, 
-        { nome: 'Expurgo', custo: 5 }, 
-        { nome: 'Selo Físico', custo: 5 }, 
-        { nome: 'Selo Mágico', custo: 5 }, 
-        { nome: 'Selo Psíquico', custo: 5 }, 
-        { nome: 'Sugestão', custo: 5 }, 
-        { nome: 'Charm', custo: 5 }, 
-        { nome: 'Infecção', custo: 5 }, 
-        { nome: 'Medo', custo: 5 }, 
-        { nome: 'Cegueira', custo: 5 }, 
-        { nome: 'Berserk', custo: 5 }, 
-        { nome: 'Quebra Estância', custo: 5 }, 
-        { nome: 'Quebra Encanto', custo: 5 }, 
-        { nome: 'Quebra Influência', custo: 5 }, 
-        { nome: 'Quebra de Armadura', custo: 5 }, 
-        { nome: 'Quebra Arcana', custo: 5 }, 
-        { nome: 'Quebra Psíquica', custo: 5 }, 
-        { nome: 'Dano Contínuo III', custo: 7 }, 
-        { nome: 'Atordoamento', custo: 7 }, 
-        { nome: 'Comando', custo: 7 }, 
-        { nome: 'Decadência', custo: 7 }, 
-        { nome: 'Terror', custo: 7 }, 
-        { nome: 'Controle', custo: 10 } 
-    ],
-    'Invocações': [ 
-        { nome: 'Invocar ilusões', custo: 1 }, 
-        { nome: 'Invocar Simulacros', custo: 10 }, 
-        { nome: 'Invocar Criatura', custo: 10 } 
-    ],
-    'Habilidades Passivas (Base)': [ 
-        { nome: 'Recuperação de Stamina', custo: 2 }, 
-        { nome: 'Recuperação de Mana', custo: 2 }, 
-        { nome: 'Recuperação de Psy', custo: 2 }, 
-        { nome: 'Passiva Reativa', custo: 3 }, 
-        { nome: 'Resistir Magia', custo: 1 }, 
-        { nome: 'Defesa Mágica', custo: 1 } 
-    ]
+    'Alcances Básicos': [ { nome: 'Toque', custo: 0 }, { nome: 'Projétil', custo: 0.5 }, { nome: 'Feitiço', custo: 1 }, { nome: 'Raio', custo: 3 }, { nome: 'Cone', custo: 1 } ],
+    'Modificadores Gerais': [ { nome: 'Ataques Extras', custo: 7 }, { nome: 'Efeito Sustentado', custo: 0 }, { nome: 'Redução de custo', custo: 2 } ],
+    'Efeitos Imediatos': [ { nome: 'Dano (Genérico)', custo: 1 }, { nome: 'Saque Rápido', custo: 2 }, { nome: 'Avançar', custo: 2 }, { nome: 'Investida', custo: 1 }, { nome: 'Teleporte', custo: 3 }, { nome: 'Empurrar', custo: 2 }, { nome: 'Puxar', custo: 2 }, { nome: 'Manobrar', custo: 3 }, { nome: 'Decoy', custo: 1 }, { nome: 'Nexus', custo: 5 }, { nome: 'Terminus', custo: 5 }, { nome: 'Panaceia', custo: 3 }, { nome: 'Ilusão Visual', custo: 1 }, { nome: 'Ilusão Auditiva', custo: 1 }, { nome: 'Ilusão Olfativa', custo: 1 }, { nome: 'Ilusão Tátil', custo: 1 }, { nome: 'Desarmar', custo: 3 }, { nome: 'Derrubar', custo: 3 }, { nome: 'Brutalidade', custo: 5 }, { nome: 'Absorver Marcas', custo: 3 } ],
+    'Buff/Debuff': [ { nome: 'Proteção', custo: 1 }, { nome: 'Dano (Buff)', custo: 1 }, { nome: 'Duração de Buff/Debuff', custo: 3 }, { nome: 'Raridade de Arma', custo: 5 }, { nome: 'Raridade de Armadura', custo: 5 }, { nome: 'Sobrevida', custo: 0.5 }, { nome: 'Duração', custo: 1 } ],
+    'Status Positivos': [ { nome: 'Arma Encantada', custo: 3 }, { nome: 'Aparo Desarmado', custo: 3 }, { nome: 'Aparo Aprimorado', custo: 3 }, { nome: 'Desengajar', custo: 3 }, { nome: 'Esmaecer', custo: 3 }, { nome: 'Regeneração I', custo: 3 }, { nome: 'Liberdade', custo: 3 }, { nome: 'Triagem', custo: 3 }, { nome: 'Força do Gigante', custo: 3 }, { nome: 'Reflexo Felino', custo: 3 }, { nome: 'Olho de Águia', custo: 3 }, { nome: 'Couro de Elefante', custo: 3 }, { nome: 'Aura do Unicórnio', custo: 3 }, { nome: 'Astúcia da Raposa', custo: 3 }, { nome: 'Persuasão Feérica', custo: 3 }, { nome: 'Refletir Dano I', custo: 3 }, { nome: 'Aparo Místico', custo: 5 }, { nome: 'Defletir', custo: 5 }, { nome: 'Contra-ataque', custo: 5 }, { nome: 'Adrenalina', custo: 5 }, { nome: 'Erudição', custo: 5 }, { nome: 'Foco', custo: 5 }, { nome: 'Regeneração II', custo: 5 }, { nome: 'Assepsia', custo: 5 }, { nome: 'Autonomia', custo: 5 }, { nome: 'Solidez', custo: 5 }, { nome: 'Refletir Dano II', custo: 5 }, { nome: 'Invisibilidade', custo: 7 }, { nome: 'Regeneração III', custo: 7 }, { nome: 'Prevenção', custo: 7 }, { nome: 'Refletir Dano III', custo: 10 } ],
+    'Barreiras': [ { nome: 'Barreira Mística: Espaços Ocupados', custo: 1 }, { nome: 'Barreira Mística: Altura da Barreira', custo: 1 }, { nome: 'Barreira Mística: Duração da Barreira', custo: 1 }, { nome: 'Barreira Mística: Proteção Bônus', custo: 1 }, { nome: 'Barreira Cinética: Espaços Ocupados', custo: 1 }, { nome: 'Barreira Cinética: Altura da Barreira', custo: 1 }, { nome: 'Barreira Cinética: Resistência da Barreira', custo: 1 } ],
+    'Status Negativos': [ { nome: 'Dano Contínuo I', custo: 3 }, { nome: 'Derreter', custo: 3 }, { nome: 'Congelado', custo: 3 }, { nome: 'Peso', custo: 3 }, { nome: 'Exaustão', custo: 3 }, { nome: 'Mana Burn', custo: 3 }, { nome: 'Desconexão', custo: 3 }, { nome: 'Pasmar', custo: 3 }, { nome: 'Bloqueio Psíquico', custo: 3 }, { nome: 'Imobilização', custo: 3 }, { nome: 'Distração', custo: 3 }, { nome: 'Atraso', custo: 3 }, { nome: 'Sufocamento', custo: 3 }, { nome: 'Inflamação', custo: 3 }, { nome: 'Afugentado', custo: 3 }, { nome: 'Dissociação', custo: 3 }, { nome: 'Confusão', custo: 3 }, { nome: 'Vertigem', custo: 3 }, { nome: 'Dano Contínuo II', custo: 5 }, { nome: 'Lentidão', custo: 5 }, { nome: 'Estupidez', custo: 5 }, { nome: 'Ruído', custo: 5 }, { nome: 'Expurgo', custo: 5 }, { nome: 'Selo Físico', custo: 5 }, { nome: 'Selo Mágico', custo: 5 }, { nome: 'Selo Psíquico', custo: 5 }, { nome: 'Sugestão', custo: 5 }, { nome: 'Charm', custo: 5 }, { nome: 'Infecção', custo: 5 }, { nome: 'Medo', custo: 5 }, { nome: 'Cegueira', custo: 5 }, { nome: 'Berserk', custo: 5 }, { nome: 'Quebra Estância', custo: 5 }, { nome: 'Quebra Encanto', custo: 5 }, { nome: 'Quebra Influência', custo: 5 }, { nome: 'Quebra de Armadura', custo: 5 }, { nome: 'Quebra Arcana', custo: 5 }, { nome: 'Quebra Psíquica', custo: 5 }, { nome: 'Dano Contínuo III', custo: 7 }, { nome: 'Atordoamento', custo: 7 }, { nome: 'Comando', custo: 7 }, { nome: 'Decadência', custo: 7 }, { nome: 'Terror', custo: 7 }, { nome: 'Controle', custo: 10 } ],
+    'Invocações': [ { nome: 'Invocar ilusões', custo: 1 }, { nome: 'Invocar Simulacros', custo: 10 }, { nome: 'Invocar Criatura', custo: 10 } ],
+    'Habilidades Passivas (Base)': [ { nome: 'Recuperação de Stamina', custo: 2 }, { nome: 'Recuperação de Mana', custo: 2 }, { nome: 'Recuperação de Psy', custo: 2 }, { nome: 'Passiva Reativa', custo: 3 }, { nome: 'Resistir Magia', custo: 1 }, { nome: 'Defesa Mágica', custo: 1 } ]
 };
-
 const SKILL_NERFS = [
-    { nome: 'Custo de Hp', custo: 1 }, 
-    { nome: 'Restrição de Alcance de Arma', custo: 1 }, 
-    { nome: 'Restrição de Tipo de Arma', custo: 1 }, 
-    { nome: 'Restrição de Material de Arma', custo: 1 }, 
-    { nome: 'Restrição de Condição da Arma', custo: 1 }, 
-    { nome: 'Restrição de Peso de Armadura', custo: 1 }, 
-    { nome: 'Restrição de Tipo de Armadura', custo: 1 }, 
-    { nome: 'Restrição de Material da Armadura', custo: 1 }, 
-    { nome: 'Acima de 50% Hp do alvo', custo: 1 }, 
-    { nome: 'Abaixo de 50% Hp do alvo', custo: 1 }, 
-    { nome: 'Acima de 25% do Recurso', custo: 1 }, 
-    { nome: 'Restrição de Alvo (Status Negativo)', custo: 1 }, 
-    { nome: 'Restrição de Alvo (Status Positivo)', custo: 1 }, 
-    { nome: 'Deficit de Marcas', custo: 1 }, 
-    { nome: 'Aumento de Custo', custo: 2 }, 
-    { nome: 'Tempo de Resfriamento', custo: 2 }, 
-    { nome: 'Restrição de Alvo (Espécie)', custo: 2 }, 
-    { nome: 'Acima de 50% Hp do usuário', custo: 3 }, 
-    { nome: 'Abaixo de 50% Hp do usuário', custo: 3 }, 
-    { nome: '100% Hp do alvo', custo: 3 }, 
-    { nome: 'Abaixo de 25% Hp do alvo', custo: 3 }, 
-    { nome: 'Egoísmo', custo: 3 }, 
-    { nome: 'Abdicação', custo: 3 }, 
-    { nome: 'Acima de 50% do Recurso', custo: 3 }, 
-    { nome: 'Restrição de Alvo (Múltiplos Status Negativos)', custo: 3 }, 
-    { nome: 'Restrição de Alvo (Múltiplos Status Positivos)', custo: 3 }, 
-    { nome: 'Restrição de Alvo (Tipo de Status)', custo: 3 }, 
-    { nome: 'Restrição de Alvo (Sequência)', custo: 3 }, 
-    { nome: 'Efeito Quebradiço', custo: 3 }, 
-    { nome: 'Restrição a sem Arma', custo: 3 }, 
-    { nome: 'Espelhar Dano', custo: 5 }, 
-    { nome: 'Espelhar Status', custo: 5 }, 
-    { nome: 'Espelhar Debuff', custo: 5 }, 
-    { nome: 'Tempo de Carregamento', custo: 5 }, 
-    { nome: 'Atraso', custo: 5 }, 
-    { nome: 'Corrente Mental', custo: 5 }, 
-    { nome: 'Quebra-Canal', custo: 5 }, 
-    { nome: 'Restrição a Arma Única', custo: 5 }, 
-    { nome: 'Restrição a Armadura Única', custo: 5 }, 
-    { nome: 'Restrição a sem Armadura', custo: 5 }, 
-    { nome: '100% Hp do Usuário', custo: 5 }, 
-    { nome: 'Abaixo de 25% Hp do usuário', custo: 5 }, 
-    { nome: 'Seletividade Mental', custo: 5 }, 
-    { nome: 'Abaixo de 10% Hp do alvo', custo: 5 }, 
-    { nome: '100% do Recurso', custo: 5 }, 
-    { nome: 'Ao Executar um Alvo', custo: 5 }, 
-    { nome: 'Eixo Mental', custo: 7 }, 
-    { nome: 'Abaixo de 10% Hp do usuário', custo: 7 }, 
-    { nome: 'Após executar um alvo', custo: 7 }, 
-    { nome: 'Restrição a Sem Equipamento', custo: 7 }, 
-    { nome: 'Ao Morrer', custo: 10 }
+    { nome: 'Custo de Hp', custo: 1 }, { nome: 'Restrição de Alcance de Arma', custo: 1 }, { nome: 'Restrição de Tipo de Arma', custo: 1 }, { nome: 'Restrição de Material de Arma', custo: 1 }, { nome: 'Restrição de Condição da Arma', custo: 1 }, { nome: 'Restrição de Peso de Armadura', custo: 1 }, { nome: 'Restrição de Tipo de Armadura', custo: 1 }, { nome: 'Restrição de Material da Armadura', custo: 1 }, { nome: 'Acima de 50% Hp do alvo', custo: 1 }, { nome: 'Abaixo de 50% Hp do alvo', custo: 1 }, { nome: 'Acima de 25% do Recurso', custo: 1 }, { nome: 'Restrição de Alvo (Status Negativo)', custo: 1 }, { nome: 'Restrição de Alvo (Status Positivo)', custo: 1 }, { nome: 'Deficit de Marcas', custo: 1 }, { nome: 'Aumento de Custo', custo: 2 }, { nome: 'Tempo de Resfriamento', custo: 2 }, { nome: 'Restrição de Alvo (Espécie)', custo: 2 }, { nome: 'Acima de 50% Hp do usuário', custo: 3 }, { nome: 'Abaixo de 50% Hp do usuário', custo: 3 }, { nome: '100% Hp do alvo', custo: 3 }, { nome: 'Abaixo de 25% Hp do alvo', custo: 3 }, { nome: 'Egoísmo', custo: 3 }, { nome: 'Abdicação', custo: 3 }, { nome: 'Acima de 50% do Recurso', custo: 3 }, { nome: 'Restrição de Alvo (Múltiplos Status Negativos)', custo: 3 }, { nome: 'Restrição de Alvo (Múltiplos Status Positivos)', custo: 3 }, { nome: 'Restrição de Alvo (Tipo de Status)', custo: 3 }, { nome: 'Restrição de Alvo (Sequência)', custo: 3 }, { nome: 'Efeito Quebradiço', custo: 3 }, { nome: 'Restrição a sem Arma', custo: 3 }, { nome: 'Espelhar Dano', custo: 5 }, { nome: 'Espelhar Status', custo: 5 }, { nome: 'Espelhar Debuff', custo: 5 }, { nome: 'Tempo de Carregamento', custo: 5 }, { nome: 'Atraso', custo: 5 }, { nome: 'Corrente Mental', custo: 5 }, { nome: 'Quebra-Canal', custo: 5 }, { nome: 'Restrição a Arma Única', custo: 5 }, { nome: 'Restrição a Armadura Única', custo: 5 }, { nome: 'Restrição a sem Armadura', custo: 5 }, { nome: '100% Hp do Usuário', custo: 5 }, { nome: 'Abaixo de 25% Hp do usuário', custo: 5 }, { nome: 'Seletividade Mental', custo: 5 }, { nome: 'Abaixo de 10% Hp do alvo', custo: 5 }, { nome: '100% do Recurso', custo: 5 }, { nome: 'Ao Executar um Alvo', custo: 5 }, { nome: 'Eixo Mental', custo: 7 }, { nome: 'Abaixo de 10% Hp do usuário', custo: 7 }, { nome: 'Após executar um alvo', custo: 7 }, { nome: 'Restrição a Sem Equipamento', custo: 7 }, { nome: 'Ao Morrer', custo: 10 }
 ];
 
 function getAllModifierCategories() { const categories = Object.keys(SKILL_MODIFIERS); categories.push('Efeitos Adversos (Nerfs)'); return categories; }
@@ -368,33 +170,45 @@ function atualizarSistemaCompleto() {
     calcularStatusDerivados(); 
 }
 
-// --- CÁLCULO DE STATUS AUTOMÁTICO (ATUALIZADO) ---
+// --- HELPER PARA REMOVER ACENTOS ---
+function removerAcentos(str) {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+// --- CÁLCULO DE STATUS AUTOMÁTICO (CORRIGIDO) ---
 function calcularStatusDerivados() {
-    // 1. Varre todos os campos de batalha (fixos e extras)
     const todosCampos = document.querySelectorAll('.battle-group, .status-extra-wrapper');
     
     todosCampos.forEach(grupo => {
         let labelEl = grupo.querySelector('label');
         let nomeStatus = "";
         
-        // Identifica o nome do status (ex: "Defesa Física", "Iniciativa")
-        if (labelEl) { nomeStatus = labelEl.innerText.trim().toLowerCase(); } 
+        if (labelEl) { nomeStatus = labelEl.innerText.trim(); } 
         else {
             let inputNome = grupo.querySelector('.status-nome-editavel');
-            if (inputNome) nomeStatus = inputNome.value.trim().toLowerCase();
+            if (inputNome) nomeStatus = inputNome.value.trim();
         }
 
         let inputValor = grupo.querySelector('.batalha-input');
         if (!nomeStatus || !inputValor) return;
 
+        // Normaliza para comparação (remove acentos e lowercase)
+        const nomeStatusNorm = removerAcentos(nomeStatus);
+
         let total = 0;
         
         // 1. ATRIBUTO BASE (Se existir no mapa)
-        if (MAPA_STATUS_ATRIBUTO.hasOwnProperty(nomeStatus)) {
-            const nomeAtributo = MAPA_STATUS_ATRIBUTO[nomeStatus];
-            if (nomeAtributo) {
-                total += getAttrValue(nomeAtributo);
+        // Usa a chave original com acento se existir, ou tenta achar compatível
+        let attrBase = null;
+        for (const [key, val] of Object.entries(MAPA_STATUS_ATRIBUTO)) {
+            if (removerAcentos(key) === nomeStatusNorm && val !== null) {
+                attrBase = val;
+                break;
             }
+        }
+        if (attrBase) {
+            total += getAttrValue(attrBase);
         }
 
         // 2. SKILLS (Passivas + Ativas com Buff Ligado)
@@ -404,15 +218,13 @@ function calcularStatusDerivados() {
 
             if (tipo === 'P' || (tipo === 'A' && isBuffAtivo)) {
                 skill.querySelectorAll('.modifier-entry').forEach(mod => {
-                    const nomeMod = mod.dataset.modName.toLowerCase();
+                    const nomeModNorm = removerAcentos(mod.dataset.modName);
                     const rep = parseInt(mod.dataset.repetitions) || 0;
                     
-                    // Verifica correspondência
-                    if (nomeMod === nomeStatus || nomeMod.includes(nomeStatus)) { 
+                    if (nomeModNorm === nomeStatusNorm || nomeModNorm.includes(nomeStatusNorm)) { 
                         total += rep; 
                     }
-                    // Caso especial para Área Crítica
-                    if ((nomeStatus === 'área crítica' || nomeStatus === 'area critica') && nomeMod.includes('crítico aprimorado')) {
+                    if ((nomeStatusNorm === 'area critica') && nomeModNorm.includes('critico aprimorado')) {
                         total += rep;
                     }
                 });
@@ -420,6 +232,7 @@ function calcularStatusDerivados() {
         });
 
         // 3. ITENS EQUIPADOS (Slots)
+        // Recalcula do zero a cada alteração. Se removeu o item, ele não está em 'slotAssignments' ou está vazio.
         for (const [slot, nomeItem] of Object.entries(slotAssignments)) {
             if (!nomeItem || nomeItem.includes('BLOQUEADO')) continue;
             
@@ -427,26 +240,35 @@ function calcularStatusDerivados() {
             
             if (itemInv) {
                 const categoria = itemInv.dataset.categoria;
-                const desc = (itemInv.dataset.desc || "").toLowerCase();
+                const descNorm = removerAcentos(itemInv.dataset.desc || "");
+                const extra = parseInt(itemInv.dataset.extra) || 0;
 
-                // 3.1. Valor direto da Armadura (só vai para Defesa FÍSICA)
-                if ((nomeStatus === 'defesa física' || nomeStatus === 'defesa fisica') && categoria === 'armadura') { 
-                    total += parseInt(itemInv.dataset.extra) || 0; 
-                }
+                // Procura bônus explícito na descrição (ex: "Defesa Magica +2")
+                const regex1 = new RegExp(`${nomeStatusNorm}\\s*\\+\\s*(\\d+)`); 
+                const match1 = descNorm.match(regex1);
+                
+                const regex2 = new RegExp(`\\+\\s*(\\d+)\\s*${nomeStatusNorm}`); 
+                const match2 = descNorm.match(regex2);
 
-                // 3.2. Valor por Descrição (ex: "Anel: +2 Dano Mágico")
-                // Regex procura: "Nome +X" ou "+X Nome"
-                const regex1 = new RegExp(`${nomeStatus}\\s*\\+\\s*(\\d+)`); 
-                const match1 = desc.match(regex1);
+                let encontrouNaDescricao = (match1 || match2);
+
+                // Prioridade: Valor escrito na descrição
                 if (match1) total += parseInt(match1[1]);
+                else if (match2) total += parseInt(match2[1]);
 
-                const regex2 = new RegExp(`\\+\\s*(\\d+)\\s*${nomeStatus}`); 
-                const match2 = desc.match(regex2);
-                if (match2) total += parseInt(match2[1]);
+                // Fallback: Valor base da Armadura (dataset.extra)
+                // SÓ conta se o status for DEFESA FÍSICA e o item for ARMADURA.
+                // Se o status for "Defesa Mágica", ele IGNORA o extra, a menos que esteja escrito na descrição.
+                // Adicionalmente: se já achou "Defesa Física +X" na descrição da própria armadura, não soma o extra para não duplicar.
+                
+                if (!encontrouNaDescricao && 
+                    nomeStatusNorm === 'defesa fisica' && 
+                    categoria === 'armadura') { 
+                    total += extra; 
+                }
             }
         }
         
-        // Atualiza valor na tela
         inputValor.value = total;
     });
 }
@@ -532,22 +354,74 @@ function abrirModalItem() {
 }
 
 function handleModalCategoryChange() {
-    const categoria = document.getElementById('modal-inv-categoria').value; const container = document.getElementById('modal-inv-extra-container'); let html = '';
-    if (categoria === 'arma') { html = ` <div style="display:flex; gap:10px; align-items:center;"> <div style="flex:1;"><label>Dano:</label><input type="text" id="modal-inv-dano" placeholder="Ex: 1d8" style="width:100%;"></div> <div style="display:flex; align-items:center; gap:5px; margin-top:15px;"> <input type="checkbox" id="modal-inv-duas-maos"> <label for="modal-inv-duas-maos" style="margin:0; cursor:pointer; font-size:0.8rem;">Duas Mãos?</label> </div> </div>`; }
-    else if (categoria === 'armadura') html = `<label>Defesa:</label><input type="number" id="modal-inv-defesa" placeholder="Ex: 2" style="width:100%;">`;
-    else if (categoria === 'consumivel') html = `<span style="font-size:0.8rem;color:#666;">Será criado com contador +/-</span>`;
+    const categoria = document.getElementById('modal-inv-categoria').value; 
+    const container = document.getElementById('modal-inv-extra-container'); 
+    let html = '';
+    
+    if (categoria === 'arma') { 
+        html = ` 
+        <div style="display:flex; gap:10px; align-items:center;"> 
+            <div style="flex:1;"><label>Dano:</label><input type="text" id="modal-inv-dano" placeholder="Ex: 1d8" style="width:100%;"></div> 
+            <div style="display:flex; align-items:center; gap:5px; margin-top:15px;"> <input type="checkbox" id="modal-inv-duas-maos"> <label for="modal-inv-duas-maos" style="margin:0; cursor:pointer; font-size:0.8rem;">Duas Mãos?</label> </div> 
+        </div>`; 
+    }
+    else if (categoria === 'armadura' || categoria === 'acessorio') { 
+        html = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+            <div><label>D. Física:</label><input type="number" id="modal-inv-def-fis" placeholder="0" style="width:100%;"></div>
+            <div><label>D. Mágica:</label><input type="number" id="modal-inv-def-mag" placeholder="0" style="width:100%;"></div>
+            <div><label>D. Psíq:</label><input type="number" id="modal-inv-def-psi" placeholder="0" style="width:100%;"></div>
+        </div>`;
+    }
+    else if (categoria === 'consumivel') { 
+        html = `<span style="font-size:0.8rem;color:#666;">Será criado com contador +/-</span>`;
+    }
     container.innerHTML = html;
 }
 
 function previewItemImage(event) { const file = event.target.files[0]; if (file) { redimensionarImagem(file, 150, (base64) => { tempItemImage = base64; document.getElementById('modal-img-preview').src = tempItemImage; document.getElementById('modal-img-preview-box').style.display = 'flex'; }); } }
 
 function adicionarItemInventario() { 
-    const categoria = document.getElementById('modal-inv-categoria').value; const raridade = document.getElementById('modal-inv-raridade').value; const nome = document.getElementById('modal-inv-nome').value.trim(); const qtd = parseInt(document.getElementById('modal-inv-qtd').value) || 1; const desc = document.getElementById('modal-inv-desc').value; 
+    const categoria = document.getElementById('modal-inv-categoria').value; 
+    const raridade = document.getElementById('modal-inv-raridade').value; 
+    const nome = document.getElementById('modal-inv-nome').value.trim(); 
+    const qtd = parseInt(document.getElementById('modal-inv-qtd').value) || 1; 
+    let desc = document.getElementById('modal-inv-desc').value; 
+    
     if (!nome) { alert("Nome é obrigatório!"); return; } 
-    let extraVal = ''; let isDuasMaos = false;
-    if (categoria === 'arma') { extraVal = document.getElementById('modal-inv-dano') ? document.getElementById('modal-inv-dano').value : ''; isDuasMaos = document.getElementById('modal-inv-duas-maos') ? document.getElementById('modal-inv-duas-maos').checked : false; }
-    else if (categoria === 'armadura') extraVal = document.getElementById('modal-inv-defesa') ? document.getElementById('modal-inv-defesa').value : ''; 
-    const container = document.getElementById('inventario-container'); const itensExistentes = Array.from(container.querySelectorAll('.inv-item')); const itemDuplicado = itensExistentes.find(item => item.dataset.nome.toLowerCase() === nome.toLowerCase() && item.dataset.raridade === raridade); 
+    
+    let extraVal = ''; 
+    let isDuasMaos = false;
+
+    if (categoria === 'arma') { 
+        extraVal = document.getElementById('modal-inv-dano') ? document.getElementById('modal-inv-dano').value : ''; 
+        isDuasMaos = document.getElementById('modal-inv-duas-maos') ? document.getElementById('modal-inv-duas-maos').checked : false; 
+    }
+    else if (categoria === 'armadura' || categoria === 'acessorio') {
+        const defFis = document.getElementById('modal-inv-def-fis') ? parseInt(document.getElementById('modal-inv-def-fis').value) || 0 : 0;
+        const defMag = document.getElementById('modal-inv-def-mag') ? parseInt(document.getElementById('modal-inv-def-mag').value) || 0 : 0;
+        const defPsi = document.getElementById('modal-inv-def-psi') ? parseInt(document.getElementById('modal-inv-def-psi').value) || 0 : 0;
+        
+        // Monta o texto dos bônus extras para a descrição
+        let bonusTexto = [];
+        if (defFis > 0) bonusTexto.push(`Defesa Física +${defFis}`);
+        if (defMag > 0) bonusTexto.push(`Defesa Mágica +${defMag}`);
+        if (defPsi > 0) bonusTexto.push(`Defesa Psíquica +${defPsi}`);
+        
+        if (bonusTexto.length > 0) {
+            desc += (desc ? "\n" : "") + "[" + bonusTexto.join(" | ") + "]";
+        }
+
+        // Se for armadura, o valor principal 'extra' é a Defesa Física para aparecer no card
+        if (categoria === 'armadura') {
+            extraVal = defFis > 0 ? defFis : '';
+        }
+    }
+    
+    const container = document.getElementById('inventario-container'); 
+    const itensExistentes = Array.from(container.querySelectorAll('.inv-item')); 
+    const itemDuplicado = itensExistentes.find(item => item.dataset.nome.toLowerCase() === nome.toLowerCase() && item.dataset.raridade === raridade); 
+    
     if (itemDuplicado) { alterarQtdInventario(itemDuplicado, qtd); } 
     else { criarElementoItem(container, { categoria, raridade, nome, qtd, desc, extra: extraVal, duasMaos: isDuasMaos, imagem: tempItemImage }); mudarAbaInventario(currentInvTab); } 
     document.getElementById('item-modal').style.display = 'none'; salvarAutomaticamente(); 
@@ -556,7 +430,12 @@ function adicionarItemInventario() {
 function criarElementoItem(container, dados) { 
     const div = document.createElement('div'); div.className = 'inv-item'; 
     div.dataset.categoria = dados.categoria; div.dataset.raridade = dados.raridade; div.dataset.nome = dados.nome; div.dataset.qtd = dados.qtd; div.dataset.desc = dados.desc; div.dataset.extra = dados.extra; div.dataset.imagem = dados.imagem || ''; div.dataset.duasmaos = dados.duasMaos;
-    let displayStats = ''; if(dados.categoria === 'arma') displayStats = `Dano: ${dados.extra} ${dados.duasMaos ? '(2 Mãos)' : ''}`; else if(dados.categoria === 'armadura') displayStats = `Defesa: ${dados.extra}`; else displayStats = dados.categoria.charAt(0).toUpperCase() + dados.categoria.slice(1);
+    
+    let displayStats = ''; 
+    if(dados.categoria === 'arma') displayStats = `Dano: ${dados.extra} ${dados.duasMaos ? '(2 Mãos)' : ''}`; 
+    else if(dados.categoria === 'armadura') displayStats = `Def. Física: ${dados.extra || 0}`; 
+    else displayStats = dados.categoria.charAt(0).toUpperCase() + dados.categoria.slice(1);
+    
     const colorRaridade = CORES_TEXTO_RARIDADE[dados.raridade] || '#333'; let imgHtml = ''; if (dados.imagem) { imgHtml = `<img src="${dados.imagem}" class="inv-item-real-img">`; } else { imgHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#777;">S/ IMG</div>`; }
     div.innerHTML = ` <div class="inv-main-row"> <div class="inv-img-wrapper" onclick="this.querySelector('input[type=file]').click()" title="Alterar Imagem"> ${imgHtml} <div class="inv-img-upload-icon">📷</div> <input type="file" accept="image/*" style="display:none;" onchange="uploadImagemItemInventario(event, this)"> </div> <div class="inv-info-col"> <div class="inv-nome-linha"> ${dados.nome} <span style="color:#aaa;">|</span> <span class="inv-raridade-text" style="color:${colorRaridade};">${dados.raridade}</span> </div> <div class="inv-stats-text">${displayStats}</div> </div> <div class="inv-contador-absolute"> <button onclick="alterarQtdInventario(this.closest('.inv-item'), 1)" class="btn-qtd-mini">+</button> <span class="inv-qtd-display">x${dados.qtd}</span> <button onclick="alterarQtdInventario(this.closest('.inv-item'), -1)" class="btn-qtd-mini">-</button> </div> </div> <div class="inv-desc-display">${dados.desc}</div> <div class="inv-footer"> <button onclick="if(confirm('Deletar este item?')) { this.closest('.inv-item').remove(); salvarAutomaticamente(); }" class="btn-remover-mini">Remover Item</button> </div> `; 
     container.appendChild(div); return div;
